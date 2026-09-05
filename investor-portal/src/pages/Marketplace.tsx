@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { merchants } from "../data/merchants";
 import { MerchantCard } from "../components/MerchantCard";
-import { DemoTag } from "../components/Badge";
 
 const categories = ["全部", "特色餐飲", "選物店", "生活品牌"];
 
@@ -40,7 +39,6 @@ export function Marketplace() {
   return (
     <div className="mx-auto max-w-7xl px-6 py-14">
       <div className="flex flex-col gap-3">
-        <DemoTag className="w-fit" />
         <h1 className="text-3xl font-medium tracking-tight text-ink">瀏覽商家</h1>
         <p className="max-w-lg text-sm leading-relaxed text-ink-secondary">
           每一家商家都提供數位營收數據與 AI 風險評估分數，協助你判斷投資決策。

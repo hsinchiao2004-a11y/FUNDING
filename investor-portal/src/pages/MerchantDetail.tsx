@@ -11,7 +11,7 @@ import { getMerchant } from "../data/merchants";
 import { RevenueChart } from "../components/RevenueChart";
 import { StatTile } from "../components/StatTile";
 import { ProgressBar } from "../components/ProgressBar";
-import { RiskBadge, DemoTag } from "../components/Badge";
+import { RiskBadge } from "../components/Badge";
 import { Button } from "../components/Button";
 import { formatCompactTWD, formatTWD, formatPct, clamp } from "../lib/format";
 import { usePortfolio } from "../lib/PortfolioContext";
@@ -40,8 +40,6 @@ export function MerchantDetail() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
-      <DemoTag className="mb-4 w-fit" />
-
       <div className="flex flex-col gap-4 border-b border-hairline pb-8 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-accent-50 text-accent-700">

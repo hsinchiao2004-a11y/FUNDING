@@ -20,16 +20,3 @@ export function RiskBadge({ tier }: { tier: RiskTier }) {
     </span>
   );
 }
-
-export function DemoTag({ className }: { className?: string }) {
-  return (
-    <span
-      className={clsx(
-        "inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-muted",
-        className,
-      )}
-    >
-      示範資料 · 非真實商家
-    </span>
-  );
-}

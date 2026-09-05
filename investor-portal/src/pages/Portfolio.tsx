@@ -4,7 +4,6 @@ import { Wallet, Storefront, TrendUp, Compass } from "@phosphor-icons/react";
 import { usePortfolio } from "../lib/PortfolioContext";
 import { getMerchant } from "../data/merchants";
 import { StatTile } from "../components/StatTile";
-import { DemoTag } from "../components/Badge";
 import { buttonClasses } from "../components/Button";
 import { formatTWD } from "../lib/format";
 
@@ -31,7 +30,6 @@ export function Portfolio() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-14">
-      <DemoTag className="mb-4 w-fit" />
       <h1 className="text-3xl font-medium tracking-tight text-ink">我的投資組合</h1>
       <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-secondary">
         投資紀錄僅儲存在本機瀏覽器（示範用途），清除瀏覽資料將會重置。

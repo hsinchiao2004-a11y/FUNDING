@@ -13,7 +13,6 @@ import { merchants } from "../data/merchants";
 import { HeroPreview } from "../components/HeroPreview";
 import { FlowLoop } from "../components/FlowLoop";
 import { MerchantCard } from "../components/MerchantCard";
-import { DemoTag } from "../components/Badge";
 import { buttonClasses } from "../components/Button";
 
 const steps = [
@@ -49,7 +48,6 @@ export function Landing() {
       {/* Hero — split, not centered */}
       <section className="mx-auto grid max-w-7xl gap-10 px-6 pt-16 pb-20 lg:grid-cols-2 lg:items-center lg:pt-20 lg:pb-28">
         <div className="flex flex-col items-start gap-6">
-          <DemoTag />
           <h1 className="text-4xl font-medium tracking-tight text-ink sm:text-5xl">
             把你愛的店，變成你的收益
           </h1>
