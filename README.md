@@ -8,14 +8,31 @@
 
 ## 怎麼打開介面看畫面
 
-需要先裝 [Node.js](https://nodejs.org)（建議 v20 以上）。
+這個 repo 是 **Private**，開始之前你要先被加為協作者（收到邀請信並在
+GitHub 上按接受），而且電腦上要能用自己的 GitHub 帳號通過驗證（例如已經
+`git` 登入過、或設定過 SSH key），不然第 1 步會抓不到東西。
 
-```bash
-git clone https://github.com/hsinchiao2004-a11y/FUNDING.git
-cd FUNDING/investor-portal
-npm install
-npm run dev
-```
+還需要先裝 [Node.js](https://nodejs.org)（建議 v20 以上）。
+
+共 4 個步驟：
+
+1. **下載專案**（把整個 repo 複製一份到你電腦上）：
+   ```bash
+   git clone https://github.com/hsinchiao2004-a11y/FUNDING.git
+   ```
+2. **進到專案資料夾：**
+   ```bash
+   cd FUNDING/investor-portal
+   ```
+3. **安裝相依套件**（抓 React / Tailwind 這些公開函式庫，跟第 1 步下載的
+   專案內容是兩回事）：
+   ```bash
+   npm install
+   ```
+4. **啟動本地伺服器：**
+   ```bash
+   npm run dev
+   ```
 
 終端機會印出一個網址，通常是：
 
