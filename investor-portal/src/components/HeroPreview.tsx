@@ -35,7 +35,12 @@ export function HeroPreview() {
               {formatCompactTWD(featured.monthlyRevenue.at(-1)!)}
             </p>
           </div>
-          <RiskBadge tier={featured.riskTier} />
+          <div className="flex flex-col items-end gap-1.5">
+            <RiskBadge tier={featured.riskTier} />
+            <span className="text-[11px] text-ink-muted">
+              RRS <span className="tabular font-mono font-medium text-accent-700">{featured.rrs}</span>
+            </span>
+          </div>
         </div>
 
         <div className="mt-4 flex items-end gap-0.5" aria-hidden>
@@ -67,16 +72,6 @@ export function HeroPreview() {
         <span className="tabular font-mono text-xs font-medium text-ink">
           本月分潤 +{formatCompactTWD(46000)}
         </span>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9, x: 10 }}
-        animate={{ opacity: 1, scale: 1, x: 0 }}
-        transition={{ duration: 0.5, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute -bottom-4 -right-4 rounded-xl border border-hairline bg-surface px-3 py-2 shadow-lg shadow-ink/5 sm:-right-8"
-      >
-        <span className="text-xs text-ink-muted">Revenue Reliability Score</span>
-        <p className="tabular font-mono text-lg font-medium text-accent-700">{featured.rrs}</p>
       </motion.div>
     </div>
   );
