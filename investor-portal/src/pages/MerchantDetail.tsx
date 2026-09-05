@@ -57,12 +57,12 @@ export function MerchantDetail() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <RiskBadge tier={merchant.riskTier} />
-          <div className="rounded-xl border border-hairline bg-surface px-3 py-1.5 text-center">
-            <p className="text-[11px] text-ink-muted">RRS 分數</p>
-            <p className="tabular font-mono text-lg font-medium text-accent-700">{merchant.rrs}</p>
-          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface px-2.5 py-1 text-xs font-medium text-ink-secondary">
+            RRS
+            <span className="tabular font-mono text-accent-700">{merchant.rrs}</span>
+          </span>
         </div>
       </div>
 
