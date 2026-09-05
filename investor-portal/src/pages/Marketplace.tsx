@@ -11,7 +11,7 @@ type SortKey = "popular" | "return" | "progress";
 const sorters: Record<SortKey, string> = {
   popular: "熱門募資",
   return: "預估年化最高",
-  progress: "募資進度最高",
+  progress: "募資進度最快",
 };
 
 export function Marketplace() {
