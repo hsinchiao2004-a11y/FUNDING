@@ -15,7 +15,7 @@ Tailwind CSS v4、React Router、Motion、Recharts、Phosphor Icons、Geist 字�
 
 ```bash
 npm install
-npm run dev       # 預設 http://localhost:5173，若該埠已被佔用會自動換下一個
+npm run dev       # http://localhost:5174
 npm run build
 npm run preview
 ```
