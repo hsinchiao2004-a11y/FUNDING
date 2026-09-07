@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Sparkle, Info } from "@phosphor-icons/react";
+import { useMemo, useRef, useState } from "react";
+import { Sparkle, Info, Plus, Trash } from "@phosphor-icons/react";
 import { useApplications } from "../lib/ApplicationContext";
 import { Button } from "../components/Button";
 import { formatTWD, clamp } from "../lib/format";
@@ -8,19 +8,43 @@ const MIN = 200_000;
 const MAX = 2_000_000;
 const SUGGESTED: [number, number] = [800_000, 1_200_000];
 
-const allocationLabels = ["租金保證金", "店面裝修", "設備採購"];
+interface AllocationItem {
+  id: number;
+  label: string;
+  pct: number;
+}
+
+const initialItems: AllocationItem[] = [
+  { id: 1, label: "租金保證金", pct: 40 },
+  { id: 2, label: "店面裝修", pct: 40 },
+  { id: 3, label: "設備採購", pct: 20 },
+];
 
 export function Apply() {
   const { applications, submit } = useApplications();
   const [amount, setAmount] = useState(1_000_000);
-  const [alloc, setAlloc] = useState([40, 40, 20]);
+  const [items, setItems] = useState<AllocationItem[]>(initialItems);
   const [success, setSuccess] = useState(false);
+  const nextId = useRef(initialItems.length + 1);
 
-  const total = alloc.reduce((a, b) => a + b, 0);
-  const isValid = total === 100;
+  const total = items.reduce((sum, item) => sum + item.pct, 0);
+  const hasEmptyLabel = items.some((item) => item.label.trim() === "");
+  const isValid = total === 100 && !hasEmptyLabel && items.length > 0;
 
-  const updateAlloc = (i: number, value: number) => {
-    setAlloc((prev) => prev.map((v, idx) => (idx === i ? clamp(value, 0, 100) : v)));
+  const updateLabel = (id: number, label: string) => {
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, label } : item)));
+  };
+
+  const updatePct = (id: number, pct: number) => {
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, pct: clamp(pct, 0, 100) } : item)));
+  };
+
+  const addItem = () => {
+    setItems((prev) => [...prev, { id: nextId.current++, label: "", pct: 0 }]);
+  };
+
+  const removeItem = (id: number) => {
+    setItems((prev) => (prev.length > 1 ? prev.filter((item) => item.id !== id) : prev));
   };
 
   const withinSuggested = useMemo(
@@ -32,7 +56,7 @@ export function Apply() {
     if (!isValid) return;
     submit({
       amount,
-      allocation: allocationLabels.map((label, i) => ({ label, pct: alloc[i] })),
+      allocation: items.map(({ label, pct }) => ({ label: label.trim(), pct })),
     });
     setSuccess(true);
   };
@@ -104,30 +128,69 @@ export function Apply() {
       <div className="mt-6 rounded-2xl border border-hairline bg-surface p-6">
         <div className="flex items-baseline justify-between">
           <span className="text-sm font-medium text-ink">資金用途分配</span>
-          <span className={`tabular text-sm font-medium ${isValid ? "text-accent-700" : "text-status-critical"}`}>
+          <span className={`tabular text-sm font-medium ${total === 100 ? "text-accent-700" : "text-status-critical"}`}>
             {total}%
           </span>
         </div>
+        <p className="mt-1 text-xs text-ink-muted">自行填寫用途名稱與比例，例如「租金保證金」「設備採購」。</p>
+
         <div className="mt-4 flex flex-col gap-4">
-          {allocationLabels.map((label, i) => (
-            <div key={label} className="flex flex-col gap-1.5">
-              <div className="flex items-baseline justify-between text-sm">
-                <span className="text-ink-secondary">{label}</span>
-                <span className="tabular text-ink-muted">{alloc[i]}%</span>
+          {items.map((item) => (
+            <div key={item.id} className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={item.label}
+                  onChange={(e) => updateLabel(item.id, e.target.value)}
+                  placeholder="填寫用途名稱"
+                  className="min-w-0 flex-1 rounded-lg border border-hairline bg-plane px-2.5 py-1.5 text-sm text-ink outline-none focus:border-accent-400"
+                />
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={item.pct}
+                    onChange={(e) => updatePct(item.id, Number(e.target.value) || 0)}
+                    className="tabular w-16 rounded-lg border border-hairline bg-plane px-2 py-1.5 text-right font-mono text-sm text-ink outline-none focus:border-accent-400"
+                  />
+                  <span className="text-sm text-ink-muted">%</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeItem(item.id)}
+                  disabled={items.length === 1}
+                  aria-label="刪除這個用途項目"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-plane hover:text-status-critical disabled:pointer-events-none disabled:opacity-30"
+                >
+                  <Trash size={15} />
+                </button>
               </div>
               <input
                 type="range"
                 min={0}
                 max={100}
                 step={5}
-                value={alloc[i]}
-                onChange={(e) => updateAlloc(i, Number(e.target.value))}
+                value={item.pct}
+                onChange={(e) => updatePct(item.id, Number(e.target.value))}
                 className="w-full accent-accent-600"
               />
             </div>
           ))}
         </div>
-        {!isValid && (
+
+        <button
+          type="button"
+          onClick={addItem}
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-accent-700 hover:text-accent-800"
+        >
+          <Plus size={15} weight="bold" /> 新增用途項目
+        </button>
+
+        {hasEmptyLabel && (
+          <p className="mt-3 text-xs text-status-critical">每個用途項目都要填寫名稱</p>
+        )}
+        {total !== 100 && (
           <p className="mt-3 text-xs text-status-critical">分配總和需為 100% 才能送出申請（目前 {total}%）</p>
         )}
       </div>
