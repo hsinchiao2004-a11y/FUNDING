@@ -207,7 +207,7 @@ export function Landing() {
 
       {/* Closing CTA — centered, manifesto-style close */}
       <section className="mx-auto max-w-3xl px-6 py-24 text-center">
-        <h2 className="mx-auto max-w-md text-2xl font-medium tracking-tight text-ink sm:text-3xl">
+        <h2 className="whitespace-nowrap text-sm font-medium tracking-tight text-ink sm:text-2xl md:text-3xl">
           讓每一家有潛力的好店，都有機會被投資。
         </h2>
         <div className="mt-8 flex justify-center">
