@@ -58,6 +58,12 @@ export function Portfolio() {
           >
             查看 AI Agent 風險監測與建議 →
           </Link>
+          <Link
+            to="/coupons"
+            className="text-sm font-medium text-accent-700 hover:text-accent-800"
+          >
+            我的優惠票券 →
+          </Link>
         </div>
       </div>
 
@@ -93,7 +99,7 @@ export function Portfolio() {
             <section className="mt-10">
               <h2 className="text-lg font-medium text-ink">分潤總覽</h2>
               <p className="mt-1 text-sm text-ink-secondary">
-                分潤除了提領現金，也可以加碼 20% 折抵為到店消費金——把投資收益導回實際消費。
+                分潤除了提領現金，也可以加碼折抵為到店消費金（加碼比例依各商家而異）——把投資收益導回實際消費。
               </p>
               <div className="mt-4 grid grid-cols-2 gap-6 rounded-2xl border border-hairline bg-surface p-6 sm:grid-cols-3">
                 <StatTile label="可運用分潤（尚未提領）" value={formatTWD(totalAccruedDividend)} />
@@ -174,7 +180,7 @@ export function Portfolio() {
                           提領現金
                         </Button>
                         <Button size="md" onClick={() => redeemAsCredit(i)}>
-                          折抵消費金 (+20%)
+                          折抵消費金 (+{Math.round((merchant.financing.creditBoostRate - 1) * 100)}%)
                         </Button>
                       </div>
                     </div>

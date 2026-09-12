@@ -56,18 +56,16 @@ export function PortfolioPieChart({ slices }: { slices: PieSlice[] }) {
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex flex-1 flex-col gap-2">
+      <div className="flex flex-col gap-2 sm:max-w-[220px]">
         {data.map((entry) => (
-          <div key={entry.name} className="flex items-center justify-between gap-3 text-sm">
-            <span className="flex items-center gap-2 text-ink-secondary">
-              <span
-                className="h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: entry.color }}
-                aria-hidden
-              />
-              {entry.name}
-            </span>
-            <span className="tabular font-mono text-ink">
+          <div key={entry.name} className="flex items-center gap-2 text-sm">
+            <span
+              className="h-2.5 w-2.5 shrink-0 rounded-full"
+              style={{ backgroundColor: entry.color }}
+              aria-hidden
+            />
+            <span className="min-w-0 flex-1 truncate text-ink-secondary">{entry.name}</span>
+            <span className="tabular shrink-0 font-mono text-ink">
               {formatPct((entry.value / total) * 100, 0)}
             </span>
           </div>

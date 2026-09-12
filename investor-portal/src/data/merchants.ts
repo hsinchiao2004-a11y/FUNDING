@@ -20,6 +20,7 @@ export interface Merchant {
     expectedAnnualReturn: [number, number]; // range, %
     estTermMonths: [number, number];
     useOfFunds: { label: string; pct: number }[];
+    creditBoostRate: number; // 分潤折抵消費金的加碼倍率，各商家不同（例如 1.2 代表 1 元分潤 = 1.2 元消費金）
   };
   rewardTiers: { minAmount: number; label: string }[];
   growthMilestone: {
@@ -56,6 +57,7 @@ export const merchants: Merchant[] = [
         { label: "店面裝修", pct: 40 },
         { label: "設備採購", pct: 20 },
       ],
+      creditBoostRate: 1.2,
     },
     rewardTiers: [
       { minAmount: 1_000, label: "投資人專屬 9 折會員卡" },
@@ -92,6 +94,7 @@ export const merchants: Merchant[] = [
         { label: "首批選品進貨", pct: 35 },
         { label: "設備採購", pct: 20 },
       ],
+      creditBoostRate: 1.15,
     },
     rewardTiers: [
       { minAmount: 1_000, label: "投資人專屬選品優先購" },
@@ -127,6 +130,7 @@ export const merchants: Merchant[] = [
         { label: "店面裝修", pct: 40 },
         { label: "廚房設備", pct: 20 },
       ],
+      creditBoostRate: 1.25,
     },
     rewardTiers: [
       { minAmount: 1_000, label: "投資人專屬招待券 6 張／年" },
@@ -162,6 +166,7 @@ export const merchants: Merchant[] = [
         { label: "原料備貨", pct: 30 },
         { label: "門市改裝", pct: 20 },
       ],
+      creditBoostRate: 1.3,
     },
     rewardTiers: [
       { minAmount: 1_000, label: "投資人專屬手作體驗課" },
@@ -197,6 +202,7 @@ export const merchants: Merchant[] = [
         { label: "戶外座位擴建", pct: 35 },
         { label: "行銷推廣", pct: 20 },
       ],
+      creditBoostRate: 1.25,
     },
     rewardTiers: [
       { minAmount: 1_000, label: "投資人專屬野餐日邀請" },
@@ -232,6 +238,7 @@ export const merchants: Merchant[] = [
         { label: "選書與選品進貨", pct: 35 },
         { label: "空間裝修", pct: 25 },
       ],
+      creditBoostRate: 1.2,
     },
     rewardTiers: [
       { minAmount: 1_000, label: "投資人專屬選書社群" },

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { merchants } from "../data/merchants";
+import { getMerchant, merchants } from "../data/merchants";
 import { clamp } from "./format";
 
 export interface Holding {
@@ -13,8 +13,6 @@ export interface StoreCredit {
   merchantId: string;
   amount: number; // 可用消費金餘額
 }
-
-const CREDIT_BOOST = 1.2; // 分潤折抵消費的加碼倍率：1 元分潤 = 1.2 元消費金
 
 interface PortfolioState {
   holdings: Holding[];
@@ -116,7 +114,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   const redeemAsCredit = (index: number) => {
     const holding = holdings[index];
     if (!holding || holding.accruedDividend <= 0) return;
-    const creditAmount = Math.round(holding.accruedDividend * CREDIT_BOOST);
+    const boostRate = getMerchant(holding.merchantId)?.financing.creditBoostRate ?? 1;
+    const creditAmount = Math.round(holding.accruedDividend * boostRate);
     setStoreCredits((prevCredits) => {
       const existing = prevCredits.find((c) => c.merchantId === holding.merchantId);
       if (existing) {

@@ -3,9 +3,10 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 export interface AgentNotification {
   id: string;
   merchantId: string;
+  offer: string; // 優惠內容，例如「到店消費享 9 折」
   message: string;
   read: boolean;
-  shared: boolean;
+  claimed: boolean; // 是否已加入優惠票券專區
   sentAt: string;
 }
 
@@ -13,7 +14,7 @@ interface NotificationState {
   notifications: AgentNotification[];
   unreadCount: number;
   markAllRead: () => void;
-  markShared: (id: string) => void;
+  markClaimed: (id: string) => void;
 }
 
 const NotificationContext = createContext<NotificationState | null>(null);
@@ -23,10 +24,11 @@ const seedNotifications: AgentNotification[] = [
   {
     id: "n1",
     merchantId: "riverside-pizza",
+    offer: "到店消費享 9 折",
     message:
       "好久不見！河岸柴燒披薩最近推出新菜單，身為投資人的你享有專屬優惠——這週到店消費享 9 折，順便看看你投資的店最近的樣子 😊",
     read: false,
-    shared: false,
+    claimed: false,
     sentAt: new Date().toISOString(),
   },
 ];
@@ -40,12 +42,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  const markShared = (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, shared: true } : n)));
+  const markClaimed = (id: string) => {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, claimed: true } : n)));
   };
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, markAllRead, markShared }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, markAllRead, markClaimed }}>
       {children}
     </NotificationContext.Provider>
   );

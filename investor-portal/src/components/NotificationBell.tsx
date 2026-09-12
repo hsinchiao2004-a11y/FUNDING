@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, Megaphone, PaperPlaneTilt } from "@phosphor-icons/react";
+import { Link } from "react-router-dom";
+import { Bell, Megaphone, Ticket, CheckCircle } from "@phosphor-icons/react";
 import { useNotifications } from "../lib/NotificationContext";
+import { useCoupons } from "../lib/CouponContext";
 import { getMerchant } from "../data/merchants";
 import { Button } from "./Button";
 
 export function NotificationBell() {
-  const { notifications, unreadCount, markAllRead, markShared } = useNotifications();
+  const { notifications, unreadCount, markAllRead, markClaimed } = useNotifications();
+  const { addCoupon } = useCoupons();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -21,6 +24,11 @@ export function NotificationBell() {
     const next = !open;
     setOpen(next);
     if (next) markAllRead();
+  };
+
+  const claim = (id: string, merchantId: string, offer: string, message: string) => {
+    addCoupon({ id, merchantId, offer, message });
+    markClaimed(id);
   };
 
   return (
@@ -55,11 +63,25 @@ export function NotificationBell() {
                   <div key={n.id} className="rounded-xl border border-hairline bg-plane p-3.5">
                     <p className="text-sm leading-relaxed text-ink">{n.message}</p>
                     <div className="mt-3 flex items-center gap-2">
-                      <Button size="md" onClick={() => markShared(n.id)} disabled={n.shared}>
-                        <PaperPlaneTilt size={14} />
-                        {n.shared ? "已分享" : "分享給朋友"}
-                      </Button>
-                      {n.shared && <span className="text-xs text-accent-700">已模擬送出（示範）</span>}
+                      {n.claimed ? (
+                        <>
+                          <span className="inline-flex items-center gap-1.5 text-sm text-accent-700">
+                            <CheckCircle size={15} weight="fill" />
+                            已加入
+                          </span>
+                          <Link
+                            to="/coupons"
+                            className="text-sm font-medium text-accent-700 hover:text-accent-800"
+                          >
+                            前往我的優惠票券 →
+                          </Link>
+                        </>
+                      ) : (
+                        <Button size="md" onClick={() => claim(n.id, n.merchantId, n.offer, n.message)}>
+                          <Ticket size={14} />
+                          加入優惠票券
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );
