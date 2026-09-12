@@ -2,7 +2,7 @@ export interface CreditProfile {
   taxId: string;
   incomeTaxDocsUploaded: boolean; // 歷年營利事業所得稅申報資料（自開始繳納以來）
   businessTaxDocsUploaded: boolean; // 歷年營業稅籍資料（自開始繳納以來）
-  bankAccount: string;
+  bankAccounts: string[]; // 可提供多筆銀行帳戶
   bankStatementUploaded: boolean;
   posConnected: boolean;
   creditScore: number | null;
@@ -23,7 +23,7 @@ export const emptyCreditProfile: CreditProfile = {
   taxId: "",
   incomeTaxDocsUploaded: false,
   businessTaxDocsUploaded: false,
-  bankAccount: "",
+  bankAccounts: [""],
   bankStatementUploaded: false,
   posConnected: false,
   creditScore: null,

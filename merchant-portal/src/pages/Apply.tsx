@@ -52,10 +52,26 @@ export function Apply() {
   const nextId = useRef(initialItems.length + 1);
 
   const taxIdValid = isValidTaxId(profile.taxId);
+  const bankAccountsValid =
+    profile.bankAccounts.length > 0 && profile.bankAccounts.every((a) => a.trim() !== "");
   const canProceedToResult =
     taxIdValid && profile.incomeTaxDocsUploaded && profile.businessTaxDocsUploaded &&
-    profile.bankAccount.trim() !== "" &&
+    bankAccountsValid &&
     profile.bankStatementUploaded && profile.creditScore !== null;
+
+  const updateBankAccount = (index: number, value: string) => {
+    setProfile((p) => ({
+      ...p,
+      bankAccounts: p.bankAccounts.map((a, i) => (i === index ? value : a)),
+    }));
+  };
+  const addBankAccount = () =>
+    setProfile((p) => ({ ...p, bankAccounts: [...p.bankAccounts, ""] }));
+  const removeBankAccount = (index: number) =>
+    setProfile((p) => ({
+      ...p,
+      bankAccounts: p.bankAccounts.length > 1 ? p.bankAccounts.filter((_, i) => i !== index) : p.bankAccounts,
+    }));
 
   const queryCreditScore = () => {
     if (profile.creditScore !== null) return;
@@ -214,13 +230,36 @@ export function Apply() {
             <label className="flex items-center gap-1.5 text-sm font-medium text-ink">
               <Bank size={16} className="text-ink-muted" /> 商家銀行帳戶（戶名／帳號）
             </label>
-            <input
-              type="text"
-              value={profile.bankAccount}
-              onChange={(e) => setProfile((p) => ({ ...p, bankAccount: e.target.value }))}
-              placeholder="例如：花見咖啡有限公司 / 012-3456789012"
-              className="rounded-xl border border-hairline bg-plane px-3 py-2 text-sm text-ink outline-none focus:border-accent-400"
-            />
+            <p className="text-xs text-ink-muted">可提供多筆帳戶。</p>
+            <div className="flex flex-col gap-2">
+              {profile.bankAccounts.map((account, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={account}
+                    onChange={(e) => updateBankAccount(index, e.target.value)}
+                    placeholder="例如：花見咖啡有限公司 / 012-3456789012"
+                    className="min-w-0 flex-1 rounded-xl border border-hairline bg-plane px-3 py-2 text-sm text-ink outline-none focus:border-accent-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeBankAccount(index)}
+                    disabled={profile.bankAccounts.length === 1}
+                    aria-label="刪除這筆帳戶"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-plane hover:text-status-critical disabled:pointer-events-none disabled:opacity-30"
+                  >
+                    <Trash size={15} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={addBankAccount}
+              className="mt-1 inline-flex w-fit items-center gap-1.5 text-sm font-medium text-accent-700 hover:text-accent-800"
+            >
+              <Plus size={15} weight="bold" /> 新增帳戶
+            </button>
           </div>
 
           <div className="flex flex-col gap-1.5">
