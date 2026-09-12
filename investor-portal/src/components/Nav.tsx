@@ -32,7 +32,6 @@ export function Nav() {
             <ArrowsLeftRight size={16} />
             <span className="hidden sm:inline">轉讓看板</span>
           </NavLink>
-          <NotificationBell />
           <NavLink
             to="/marketplace"
             className={({ isActive }) =>
@@ -57,6 +56,7 @@ export function Nav() {
           >
             我的投資
           </NavLink>
+          <NotificationBell />
         </div>
       </div>
     </header>
