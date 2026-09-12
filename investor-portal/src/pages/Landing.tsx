@@ -207,12 +207,9 @@ export function Landing() {
 
       {/* Closing CTA — centered, manifesto-style close */}
       <section className="mx-auto max-w-3xl px-6 py-24 text-center">
-        <h2 className="text-3xl font-medium tracking-tight text-ink sm:text-4xl">
-          每一筆消費，都值得被看見
-        </h2>
-        <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-ink-secondary">
+        <h2 className="mx-auto max-w-md text-2xl font-medium tracking-tight text-ink sm:text-3xl">
           讓每一家有潛力的好店，都有機會被投資。
-        </p>
+        </h2>
         <div className="mt-8 flex justify-center">
           <Link to="/marketplace" className={buttonClasses("primary", "lg")}>
             開始投資
