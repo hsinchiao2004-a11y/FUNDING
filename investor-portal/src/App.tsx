@@ -5,6 +5,7 @@ import { Marketplace } from "./pages/Marketplace";
 import { MerchantDetail } from "./pages/MerchantDetail";
 import { Portfolio } from "./pages/Portfolio";
 import { Transfers } from "./pages/Transfers";
+import { Agents } from "./pages/Agents";
 import { PortfolioProvider } from "./lib/PortfolioContext";
 import { TransferMarketProvider } from "./lib/TransferMarketContext";
 
@@ -20,6 +21,7 @@ export default function App() {
               <Route path="/merchants/:id" element={<MerchantDetail />} />
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/transfers" element={<Transfers />} />
+              <Route path="/agents" element={<Agents />} />
             </Route>
           </Routes>
         </BrowserRouter>

@@ -8,6 +8,7 @@ import {
   Bank,
   Robot,
   Receipt,
+  Megaphone,
 } from "@phosphor-icons/react";
 import { merchants } from "../data/merchants";
 import { HeroPreview } from "../components/HeroPreview";
@@ -139,6 +140,43 @@ export function Landing() {
           {featured.map((merchant) => (
             <MerchantCard key={merchant.id} merchant={merchant} />
           ))}
+        </div>
+      </section>
+
+      {/* AI Agent — 2-cell card grid */}
+      <section className="mx-auto max-w-7xl px-6 py-20">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="max-w-lg">
+            <h2 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">
+              背後有 AI Agent 持續運作
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
+              不只是跑一次評分，而是持續監控、主動給建議。
+            </p>
+          </div>
+          <Link to="/agents" className="text-sm font-medium text-accent-700 hover:text-accent-800">
+            查看 AI Agent 詳情 →
+          </Link>
+        </div>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-3 rounded-2xl border border-hairline bg-surface p-6">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
+              <MagnifyingGlass size={22} weight="duotone" />
+            </div>
+            <h3 className="font-medium text-ink">風險監測管理 Agent</h3>
+            <p className="text-sm leading-relaxed text-ink-secondary">
+              持續掃描你持有的每一筆分潤權與商家風險狀態，主動給出建議，而不是等你自己發現異常。
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 rounded-2xl border border-hairline bg-surface p-6">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
+              <Megaphone size={22} weight="duotone" />
+            </div>
+            <h3 className="font-medium text-ink">「投資人變消費者」促購 Agent</h3>
+            <p className="text-sm leading-relaxed text-ink-secondary">
+              偵測到投資商家營收下滑時，主動生成邀請消費的訊息，把焦慮轉化成幫商家拉抬營收的具體行動。
+            </p>
+          </div>
         </div>
       </section>
 

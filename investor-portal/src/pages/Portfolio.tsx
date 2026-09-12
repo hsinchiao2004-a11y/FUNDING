@@ -45,12 +45,20 @@ export function Portfolio() {
             投資紀錄僅儲存在本機瀏覽器（示範用途），清除瀏覽資料將會重置。
           </p>
         </div>
-        <Link
-          to="/transfers"
-          className="text-sm font-medium text-accent-700 hover:text-accent-800"
-        >
-          想提前變現？前往意向轉讓看板 →
-        </Link>
+        <div className="flex flex-col items-start gap-1.5 sm:items-end">
+          <Link
+            to="/transfers"
+            className="text-sm font-medium text-accent-700 hover:text-accent-800"
+          >
+            想提前變現？前往意向轉讓看板 →
+          </Link>
+          <Link
+            to="/agents"
+            className="text-sm font-medium text-accent-700 hover:text-accent-800"
+          >
+            查看 AI Agent 風險監測與建議 →
+          </Link>
+        </div>
       </div>
 
       {holdings.length === 0 ? (
