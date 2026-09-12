@@ -1,12 +1,30 @@
-import { useMemo, useRef, useState } from "react";
-import { Sparkle, Info, Plus, Trash } from "@phosphor-icons/react";
+import { useRef, useState } from "react";
+import {
+  Sparkle,
+  Info,
+  Plus,
+  Trash,
+  IdentificationCard,
+  Receipt,
+  Bank,
+  FileArrowUp,
+  X,
+  ShieldCheck,
+  CircleNotch,
+} from "@phosphor-icons/react";
 import { useApplications } from "../lib/ApplicationContext";
+import { rrs } from "../data/account";
+import {
+  emptyCreditProfile,
+  scoreFromRRS,
+  tierFromScore,
+  assessCredit,
+  isValidTaxId,
+  type CreditProfile,
+  type CreditAssessment,
+} from "../lib/underwriting";
 import { Button } from "../components/Button";
 import { formatTWD, clamp } from "../lib/format";
-
-const MIN = 200_000;
-const MAX = 2_000_000;
-const SUGGESTED: [number, number] = [800_000, 1_200_000];
 
 interface AllocationItem {
   id: number;
@@ -20,48 +38,70 @@ const initialItems: AllocationItem[] = [
   { id: 3, label: "設備採購", pct: 20 },
 ];
 
+type Stage = "verify" | "result" | "amount" | "success";
+
 export function Apply() {
   const { applications, submit } = useApplications();
-  const [amount, setAmount] = useState(1_000_000);
+  const [stage, setStage] = useState<Stage>("verify");
+
+  const [profile, setProfile] = useState<CreditProfile>(emptyCreditProfile);
+  const [queryingScore, setQueryingScore] = useState(false);
+  const [assessment, setAssessment] = useState<CreditAssessment | null>(null);
+
+  const [amount, setAmount] = useState(0);
   const [items, setItems] = useState<AllocationItem[]>(initialItems);
-  const [success, setSuccess] = useState(false);
   const nextId = useRef(initialItems.length + 1);
+
+  const taxIdValid = isValidTaxId(profile.taxId);
+  const canProceedToResult =
+    taxIdValid && profile.taxAmount > 0 && profile.bankAccount.trim() !== "" &&
+    profile.bankStatementUploaded && profile.creditScore !== null;
+
+  const queryCreditScore = () => {
+    if (profile.creditScore !== null) return;
+    setQueryingScore(true);
+    window.setTimeout(() => {
+      setProfile((p) => ({ ...p, creditScore: scoreFromRRS(rrs.current) }));
+      setQueryingScore(false);
+    }, 800);
+  };
+
+  const goToResult = () => {
+    const result = assessCredit(profile);
+    if (!result) return;
+    setAssessment(result);
+    setStage("result");
+  };
+
+  const startApplication = () => {
+    if (!assessment) return;
+    const [min, max] = assessment.suggestedRange;
+    setAmount(Math.round((min + max) / 2 / 10_000) * 10_000);
+    setStage("amount");
+  };
 
   const total = items.reduce((sum, item) => sum + item.pct, 0);
   const hasEmptyLabel = items.some((item) => item.label.trim() === "");
-  const isValid = total === 100 && !hasEmptyLabel && items.length > 0;
+  const isValidAllocation = total === 100 && !hasEmptyLabel && items.length > 0;
 
   const updateLabel = (id: number, label: string) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, label } : item)));
   };
-
   const updatePct = (id: number, pct: number) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, pct: clamp(pct, 0, 100) } : item)));
   };
-
-  const addItem = () => {
-    setItems((prev) => [...prev, { id: nextId.current++, label: "", pct: 0 }]);
-  };
-
-  const removeItem = (id: number) => {
+  const addItem = () => setItems((prev) => [...prev, { id: nextId.current++, label: "", pct: 0 }]);
+  const removeItem = (id: number) =>
     setItems((prev) => (prev.length > 1 ? prev.filter((item) => item.id !== id) : prev));
-  };
-
-  const withinSuggested = useMemo(
-    () => amount >= SUGGESTED[0] && amount <= SUGGESTED[1],
-    [amount],
-  );
 
   const handleSubmit = () => {
-    if (!isValid) return;
-    submit({
-      amount,
-      allocation: items.map(({ label, pct }) => ({ label: label.trim(), pct })),
-    });
-    setSuccess(true);
+    if (!isValidAllocation) return;
+    submit({ amount, allocation: items.map(({ label, pct }) => ({ label: label.trim(), pct })) });
+    setStage("success");
   };
 
-  if (success) {
+  // ---------- Stage: success ----------
+  if (stage === "success") {
     return (
       <div className="mx-auto max-w-lg px-6 py-20 text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-50 text-accent-700">
@@ -71,28 +111,229 @@ export function Apply() {
         <p className="mt-2 text-sm text-ink-secondary">
           申請金額 {formatTWD(amount)}，平台將於 1–2 個工作天內完成 AI 風險評估與人工審查。
         </p>
-        <Button className="mt-6" onClick={() => setSuccess(false)}>
+        <Button className="mt-6" onClick={() => setStage("amount")}>
           再送一筆申請
         </Button>
       </div>
     );
   }
 
+  // ---------- Stage: verify (KYC / underwriting data) ----------
+  if (stage === "verify") {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-12">
+        <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">申請融資</h1>
+        <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-secondary">
+          第一步：核實商家資料，平台將依此判斷有／無擔保核貸額度、每月額度與最低還款條件。
+        </p>
+
+        <div className="mt-6 flex items-center gap-2 text-xs font-medium text-ink-muted">
+          <span className="text-accent-700">① 核實資料</span>
+          <span>—</span>
+          <span>② 核貸結果</span>
+          <span>—</span>
+          <span>③ 申請金額</span>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-5 rounded-2xl border border-hairline bg-surface p-6">
+          <div className="flex flex-col gap-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-ink">
+              <IdentificationCard size={16} className="text-ink-muted" /> 統一編號
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={8}
+              value={profile.taxId}
+              onChange={(e) => setProfile((p) => ({ ...p, taxId: e.target.value.replace(/\D/g, "") }))}
+              placeholder="8 碼統一編號"
+              className="rounded-xl border border-hairline bg-plane px-3 py-2 text-sm text-ink outline-none focus:border-accent-400"
+            />
+            {profile.taxId.length > 0 && !taxIdValid && (
+              <p className="text-xs text-status-critical">統一編號需為 8 碼數字</p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-ink">
+              <Receipt size={16} className="text-ink-muted" /> 最近一期營業稅額
+            </label>
+            <div className="flex items-center gap-2 rounded-xl border border-hairline bg-plane px-3 py-2 focus-within:border-accent-400">
+              <span className="text-sm text-ink-muted">NT$</span>
+              <input
+                type="number"
+                min={0}
+                value={profile.taxAmount || ""}
+                onChange={(e) => setProfile((p) => ({ ...p, taxAmount: Number(e.target.value) || 0 }))}
+                className="tabular w-full bg-transparent font-mono text-sm text-ink outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-ink">
+              <Bank size={16} className="text-ink-muted" /> 商家銀行帳戶（戶名／帳號）
+            </label>
+            <input
+              type="text"
+              value={profile.bankAccount}
+              onChange={(e) => setProfile((p) => ({ ...p, bankAccount: e.target.value }))}
+              placeholder="例如：花見咖啡有限公司 / 012-3456789012"
+              className="rounded-xl border border-hairline bg-plane px-3 py-2 text-sm text-ink outline-none focus:border-accent-400"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium text-ink">銀行對帳單／存摺封面</span>
+            {profile.bankStatementUploaded ? (
+              <div className="flex items-center justify-between rounded-xl border border-hairline bg-plane px-3 py-2">
+                <span className="text-sm text-ink-secondary">對帳單.pdf 已上傳</span>
+                <button
+                  type="button"
+                  onClick={() => setProfile((p) => ({ ...p, bankStatementUploaded: false }))}
+                  className="text-ink-muted hover:text-status-critical"
+                  aria-label="移除已上傳檔案"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setProfile((p) => ({ ...p, bankStatementUploaded: true }))}
+                className="inline-flex w-fit items-center gap-1.5 rounded-xl border border-dashed border-hairline px-3 py-2 text-sm text-ink-secondary hover:border-accent-400 hover:text-accent-700"
+              >
+                <FileArrowUp size={16} /> 上傳銀行對帳單／存摺（示範：點擊即模擬上傳）
+              </button>
+            )}
+          </div>
+
+          <label className="flex items-start gap-2.5 rounded-xl border border-hairline bg-plane px-3 py-2.5">
+            <input
+              type="checkbox"
+              checked={profile.posConnected}
+              onChange={(e) => setProfile((p) => ({ ...p, posConnected: e.target.checked }))}
+              className="mt-0.5 accent-accent-600"
+            />
+            <span className="text-sm text-ink-secondary">
+              提供 POS 交易數據（選填）——有助於提高核准額度、降低最低還款比例
+            </span>
+          </label>
+
+          <div className="flex flex-col gap-2 border-t border-hairline pt-5">
+            <span className="flex items-center gap-1.5 text-sm font-medium text-ink">
+              <ShieldCheck size={16} className="text-ink-muted" /> 信用紀錄與評分
+            </span>
+            {profile.creditScore === null ? (
+              <Button
+                variant="ghost"
+                size="md"
+                className="w-fit"
+                onClick={queryCreditScore}
+                disabled={queryingScore}
+              >
+                {queryingScore ? <CircleNotch size={15} className="animate-spin" /> : null}
+                {queryingScore ? "查詢中…" : "查詢信用聯徵評分"}
+              </Button>
+            ) : (
+              <div className="flex items-center gap-3 rounded-xl border border-hairline bg-plane px-3 py-2.5">
+                <span className="tabular font-mono text-lg font-medium text-accent-700">{profile.creditScore}</span>
+                <span className="text-sm text-ink-secondary">{tierFromScore(profile.creditScore)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <Button className="mt-6 w-full" size="lg" disabled={!canProceedToResult} onClick={goToResult}>
+          查看核貸額度
+        </Button>
+        <p className="mt-3 text-center text-[11px] leading-relaxed text-ink-muted">
+          本頁為產品原型示範，所有資料僅儲存於本機瀏覽器，不會實際上傳或查詢真實聯徵資料。
+        </p>
+      </div>
+    );
+  }
+
+  // ---------- Stage: result (underwriting outcome) ----------
+  if (stage === "result" && assessment) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-12">
+        <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">核貸結果</h1>
+        <div className="mt-6 flex items-center gap-2 text-xs font-medium text-ink-muted">
+          <button onClick={() => setStage("verify")} className="hover:text-ink">① 核實資料</button>
+          <span>—</span>
+          <span className="text-accent-700">② 核貸結果</span>
+          <span>—</span>
+          <span>③ 申請金額</span>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-hairline bg-surface p-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center rounded-full bg-accent-50 px-3 py-1 text-sm font-medium text-accent-700">
+              {assessment.securedType}核貸
+            </span>
+            <span className="text-sm text-ink-muted">
+              信用評分 {assessment.score}（{assessment.tier}）
+            </span>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3">
+            <div>
+              <p className="text-xs text-ink-muted">建議額度區間</p>
+              <p className="tabular font-mono text-lg font-medium text-ink">
+                {formatTWD(assessment.suggestedRange[0])} – {formatTWD(assessment.suggestedRange[1])}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-ink-muted">每月額度上限</p>
+              <p className="tabular font-mono text-lg font-medium text-ink">{formatTWD(assessment.monthlyQuota)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-ink-muted">最低月還款比例</p>
+              <p className="tabular font-mono text-lg font-medium text-ink">{assessment.minRepayPct}%</p>
+            </div>
+          </div>
+
+          {!profile.posConnected && (
+            <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-hairline bg-plane p-3.5">
+              <Info size={16} weight="duotone" className="mt-0.5 shrink-0 text-accent-600" />
+              <p className="text-xs leading-relaxed text-ink-muted">
+                提供 POS 交易數據可再提高額度、並降低最低還款比例 0.5 個百分點。
+              </p>
+            </div>
+          )}
+        </div>
+
+        <Button className="mt-6 w-full" size="lg" onClick={startApplication}>
+          繼續申請融資
+        </Button>
+      </div>
+    );
+  }
+
+  // ---------- Stage: amount (existing amount + allocation flow) ----------
+  const [min, max] = assessment?.suggestedRange ?? [200_000, 2_000_000];
+  const withinSuggested = amount >= min && amount <= max;
+
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
-      <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">申請融資</h1>
-      <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-secondary">
-        依你目前的數位營收數據與 RRS 分數，AI 預估可申請額度如下。
-      </p>
+      <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">申請金額</h1>
+      <div className="mt-6 flex items-center gap-2 text-xs font-medium text-ink-muted">
+        <button onClick={() => setStage("verify")} className="hover:text-ink">① 核實資料</button>
+        <span>—</span>
+        <button onClick={() => setStage("result")} className="hover:text-ink">② 核貸結果</button>
+        <span>—</span>
+        <span className="text-accent-700">③ 申請金額</span>
+      </div>
 
       <div className="mt-6 flex items-start gap-3 rounded-2xl border border-accent-200 bg-accent-50 p-4">
         <Info size={18} weight="duotone" className="mt-0.5 shrink-0 text-accent-700" />
         <p className="text-sm text-accent-800">
-          AI 建議可申請額度：{formatTWD(SUGGESTED[0])} – {formatTWD(SUGGESTED[1])}
+          依核貸結果，建議申請額度：{formatTWD(min)} – {formatTWD(max)}
         </p>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-hairline bg-surface p-6">
+      <div className="mt-6 rounded-2xl border border-hairline bg-surface p-6">
         <label htmlFor="apply-amount" className="text-sm font-medium text-ink">
           申請金額
         </label>
@@ -101,26 +342,26 @@ export function Apply() {
           <input
             id="apply-amount"
             type="number"
-            min={MIN}
-            max={MAX}
-            step={50_000}
+            min={min}
+            max={max}
+            step={10_000}
             value={amount}
-            onChange={(e) => setAmount(clamp(Number(e.target.value) || 0, MIN, MAX))}
+            onChange={(e) => setAmount(clamp(Number(e.target.value) || 0, min, max))}
             className="tabular w-full bg-transparent font-mono text-sm text-ink outline-none"
           />
         </div>
         <input
           type="range"
-          min={MIN}
-          max={MAX}
-          step={50_000}
+          min={min}
+          max={max}
+          step={10_000}
           value={amount}
           onChange={(e) => setAmount(Number(e.target.value))}
           className="mt-3 w-full accent-accent-600"
         />
         {!withinSuggested && (
           <p className="mt-2 text-xs text-ink-muted">
-            超出 AI 建議範圍不代表無法申請，但可能需要較長的人工審查時間。
+            超出建議額度範圍不代表無法申請，但可能需要較長的人工審查時間。
           </p>
         )}
       </div>
@@ -187,15 +428,13 @@ export function Apply() {
           <Plus size={15} weight="bold" /> 新增用途項目
         </button>
 
-        {hasEmptyLabel && (
-          <p className="mt-3 text-xs text-status-critical">每個用途項目都要填寫名稱</p>
-        )}
+        {hasEmptyLabel && <p className="mt-3 text-xs text-status-critical">每個用途項目都要填寫名稱</p>}
         {total !== 100 && (
           <p className="mt-3 text-xs text-status-critical">分配總和需為 100% 才能送出申請（目前 {total}%）</p>
         )}
       </div>
 
-      <Button className="mt-8 w-full" size="lg" disabled={!isValid} onClick={handleSubmit}>
+      <Button className="mt-8 w-full" size="lg" disabled={!isValidAllocation} onClick={handleSubmit}>
         送出申請
       </Button>
       <p className="mt-3 text-center text-[11px] leading-relaxed text-ink-muted">
