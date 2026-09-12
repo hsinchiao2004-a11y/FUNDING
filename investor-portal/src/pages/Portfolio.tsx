@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Wallet, Storefront, TrendUp, Compass, Coins, Ticket } from "@phosphor-icons/react";
+import { Wallet, Storefront, TrendUp, Compass, Coins, Ticket, ArrowsLeftRight, Robot } from "@phosphor-icons/react";
 import { usePortfolio } from "../lib/PortfolioContext";
 import { getMerchant } from "../data/merchants";
 import { StatTile } from "../components/StatTile";
@@ -45,18 +45,12 @@ export function Portfolio() {
             投資紀錄僅儲存在本機瀏覽器（示範用途），清除瀏覽資料將會重置。
           </p>
         </div>
-        <div className="flex flex-col items-start gap-1.5 sm:items-end">
-          <Link
-            to="/transfers"
-            className="text-sm font-medium text-accent-700 hover:text-accent-800"
-          >
-            想提前變現？前往意向轉讓看板 →
+        <div className="flex flex-wrap items-center gap-2">
+          <Link to="/transfers" className={buttonClasses("ghost", "md")}>
+            <ArrowsLeftRight size={15} /> 前往意向轉讓看板
           </Link>
-          <Link
-            to="/agents"
-            className="text-sm font-medium text-accent-700 hover:text-accent-800"
-          >
-            查看 AI Agent 風險監測與建議 →
+          <Link to="/agents" className={buttonClasses("ghost", "md")}>
+            <Robot size={15} /> AI 風險監測與建議
           </Link>
         </div>
       </div>

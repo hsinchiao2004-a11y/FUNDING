@@ -1,4 +1,3 @@
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { formatTWD, formatPct } from "../lib/format";
 
 // 分類色沿用 dataviz 色板固定順序（blue/orange/aqua），第 4 項以上一律併入「其他」，
@@ -11,6 +10,15 @@ export interface PieSlice {
   value: number;
 }
 
+const SIZE = 160;
+const CENTER = SIZE / 2;
+const OUTER_R = 72;
+const INNER_R = 44;
+const RING_R = (OUTER_R + INNER_R) / 2; // stroke drawn along this radius
+const STROKE_W = OUTER_R - INNER_R;
+const CIRCUMFERENCE = 2 * Math.PI * RING_R;
+const GAP_DEG = 2; // visual gap between slices, matches previous paddingAngle
+
 export function PortfolioPieChart({ slices }: { slices: PieSlice[] }) {
   const total = slices.reduce((sum, s) => sum + s.value, 0);
   const top = slices.slice(0, 3);
@@ -21,42 +29,43 @@ export function PortfolioPieChart({ slices }: { slices: PieSlice[] }) {
     ...(restTotal > 0 ? [{ name: "其他", value: restTotal, color: OTHER_COLOR }] : []),
   ];
 
+  const gapLength = (GAP_DEG / 360) * CIRCUMFERENCE;
+  let cumulative = 0;
+
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+    <div className="flex flex-col gap-4 sm:mx-auto sm:w-fit sm:flex-row sm:items-center sm:gap-6">
       <div className="h-40 w-40 shrink-0">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              innerRadius={44}
-              outerRadius={72}
-              paddingAngle={2}
-              stroke="#fcfcfb"
-              strokeWidth={2}
-            >
-              {data.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value, name) => {
-                const v = Number(value);
-                return [`${formatTWD(v)}（${formatPct((v / total) * 100, 0)}）`, String(name)];
-              }}
-              contentStyle={{
-                background: "#fcfcfb",
-                border: "1px solid #e1e0d9",
-                borderRadius: 8,
-                fontSize: 12,
-                color: "#0b0b0b",
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width={SIZE} height={SIZE}>
+          <g transform={`rotate(-90 ${CENTER} ${CENTER})`}>
+            {data.map((entry) => {
+              const fraction = total > 0 ? entry.value / total : 0;
+              const rawLength = fraction * CIRCUMFERENCE;
+              const length = Math.max(rawLength - gapLength, 0);
+              const offset = -cumulative;
+              cumulative += rawLength;
+              return (
+                <circle
+                  key={entry.name}
+                  cx={CENTER}
+                  cy={CENTER}
+                  r={RING_R}
+                  fill="none"
+                  stroke={entry.color}
+                  strokeWidth={STROKE_W}
+                  strokeDasharray={`${length} ${CIRCUMFERENCE - length}`}
+                  strokeDashoffset={offset}
+                  strokeLinecap="round"
+                >
+                  <title>
+                    {entry.name}：{formatTWD(entry.value)}（{formatPct(fraction * 100, 0)}）
+                  </title>
+                </circle>
+              );
+            })}
+          </g>
+        </svg>
       </div>
-      <div className="flex flex-col gap-2 sm:max-w-[220px]">
+      <div className="flex flex-col gap-2">
         {data.map((entry) => (
           <div key={entry.name} className="flex items-center gap-2 text-sm">
             <span
