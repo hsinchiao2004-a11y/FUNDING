@@ -157,15 +157,17 @@ export function Landing() {
             查看 AI Agent 詳情 →
           </Link>
         </div>
-        <div className="mt-8 max-w-lg">
-          <div className="flex flex-col gap-3 rounded-2xl border border-hairline bg-surface p-6">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
+        <div className="mt-8 max-w-3xl">
+          <div className="flex flex-col gap-4 rounded-2xl border border-hairline bg-surface p-6 sm:flex-row sm:items-start">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
               <MagnifyingGlass size={22} weight="duotone" />
             </div>
-            <h3 className="font-medium text-ink">風險監測管理 Agent</h3>
-            <p className="text-sm leading-relaxed text-ink-secondary">
-              持續掃描你持有的每一筆分潤權與商家風險狀態，主動給出建議，而不是等你自己發現異常。
-            </p>
+            <div>
+              <h3 className="font-medium text-ink">風險監測管理 Agent</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-secondary">
+                持續掃描你持有的每一筆分潤權與商家風險狀態，主動給出建議，而不是等你自己發現異常。
+              </p>
+            </div>
           </div>
         </div>
       </section>
