@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { TrendUp, Lightbulb, Warning, Megaphone, ArrowRight } from "@phosphor-icons/react";
+import { TrendUp, Lightbulb, Warning, ArrowRight } from "@phosphor-icons/react";
 import {
   profile,
   rrs,
@@ -15,17 +14,16 @@ import { RevenueChart } from "../components/RevenueChart";
 import { StatTile } from "../components/StatTile";
 import { ProgressBar } from "../components/ProgressBar";
 import { Pill } from "../components/Badge";
-import { Button } from "../components/Button";
+import { PromoSuggestionCard } from "../components/PromoSuggestionCard";
 import { formatCompactTWD, formatPct } from "../lib/format";
 
-const suggestionIcon = { positive: TrendUp, info: Lightbulb, warning: Warning, promo: Megaphone };
-const suggestionTone = { positive: "good", info: "info", warning: "warning", promo: "info" } as const;
-const suggestionLabel = { positive: "正向訊號", info: "小提醒", warning: "建議處理", promo: "促購建議" } as const;
+const suggestionIcon = { positive: TrendUp, info: Lightbulb, warning: Warning };
+const suggestionTone = { positive: "good", info: "info", warning: "warning" } as const;
+const suggestionLabel = { positive: "正向訊號", info: "小提醒", warning: "建議處理" } as const;
 
 export function Dashboard() {
   const connectedCount = dataSources.filter((d) => d.connected).length;
   const pctRepaid = (totalRepaid / cap) * 100;
-  const [adoptedPromos, setAdoptedPromos] = useState<Set<string>>(new Set());
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-12">
@@ -112,9 +110,12 @@ export function Dashboard() {
         <h2 className="text-lg font-medium text-ink">AI 財務建議</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
           {aiSuggestions.map((s) => {
+            if (s.type === "promo") {
+              return (
+                <PromoSuggestionCard key={s.title} title={s.title} body={s.body} merchantName={profile.name} />
+              );
+            }
             const Icon = suggestionIcon[s.type];
-            const isPromo = s.type === "promo";
-            const adopted = adoptedPromos.has(s.title);
             return (
               <div key={s.title} className="flex flex-col gap-3 rounded-2xl border border-hairline bg-surface p-5">
                 <Pill tone={suggestionTone[s.type]}>
@@ -123,17 +124,6 @@ export function Dashboard() {
                 </Pill>
                 <p className="font-medium text-ink">{s.title}</p>
                 <p className="text-sm leading-relaxed text-ink-secondary">{s.body}</p>
-                {isPromo && (
-                  <Button
-                    variant={adopted ? "ghost" : "primary"}
-                    size="md"
-                    className="mt-1 w-fit"
-                    disabled={adopted}
-                    onClick={() => setAdoptedPromos((prev) => new Set(prev).add(s.title))}
-                  >
-                    {adopted ? "已採用，等待促購 Agent 發送" : "採用此建議"}
-                  </Button>
-                )}
               </div>
             );
           })}
