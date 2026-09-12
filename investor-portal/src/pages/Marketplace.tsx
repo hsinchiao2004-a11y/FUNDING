@@ -15,7 +15,7 @@ const sorters: Record<SortKey, string> = {
 
 export function Marketplace() {
   const [category, setCategory] = useState("全部");
-  const [sort, setSort] = useState<SortKey>("progress");
+  const [sort, setSort] = useState<SortKey>("popular");
 
   const list = useMemo(() => {
     let result = merchants.filter(
