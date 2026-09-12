@@ -3,7 +3,7 @@ import { TrendUp, Storefront, FileText, ArrowRight } from "@phosphor-icons/react
 import { Footer } from "../components/Footer";
 
 const MERCHANT_PORTAL_URL = "https://funding-fefg.vercel.app/";
-const MERCHANT_APPLY_URL = "https://funding-fefg.vercel.app/apply";
+const MERCHANT_APPLY_URL = "https://funding-fefg.vercel.app/apply/new";
 
 const options = [
   {
