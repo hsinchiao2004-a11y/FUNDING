@@ -30,10 +30,20 @@ export function Portfolio() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-14">
-      <h1 className="text-3xl font-medium tracking-tight text-ink">我的投資組合</h1>
-      <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-secondary">
-        投資紀錄僅儲存在本機瀏覽器（示範用途），清除瀏覽資料將會重置。
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-medium tracking-tight text-ink">我的投資組合</h1>
+          <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-secondary">
+            投資紀錄僅儲存在本機瀏覽器（示範用途），清除瀏覽資料將會重置。
+          </p>
+        </div>
+        <Link
+          to="/transfers"
+          className="text-sm font-medium text-accent-700 hover:text-accent-800"
+        >
+          想提前變現？前往意向轉讓看板 →
+        </Link>
+      </div>
 
       {holdings.length === 0 ? (
         <div className="mt-12 flex flex-col items-center gap-4 rounded-2xl border border-dashed border-hairline py-20 text-center">

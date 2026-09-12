@@ -10,6 +10,8 @@ export interface Holding {
 interface PortfolioState {
   holdings: Holding[];
   invest: (merchantId: string, amount: number) => void;
+  removeHoldingAt: (index: number) => void;
+  addHolding: (merchantId: string, amount: number) => void;
   totalInvested: number;
 }
 
@@ -38,13 +40,30 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     ]);
   };
 
+  // Used when a holding is listed on the transfer-intent board (pulled out of
+  // the active portfolio while the listing is pending / matched).
+  const removeHoldingAt = (index: number) => {
+    setHoldings((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Used when a transfer-intent listing is cancelled (give the holding back),
+  // or when a platform-matched transfer completes (credit the buyer side).
+  const addHolding = (merchantId: string, amount: number) => {
+    setHoldings((prev) => [
+      ...prev,
+      { merchantId, amount, investedAt: new Date().toISOString() },
+    ]);
+  };
+
   const totalInvested = useMemo(
     () => holdings.reduce((sum, h) => sum + h.amount, 0),
     [holdings],
   );
 
   return (
-    <PortfolioContext.Provider value={{ holdings, invest, totalInvested }}>
+    <PortfolioContext.Provider
+      value={{ holdings, invest, removeHoldingAt, addHolding, totalInvested }}
+    >
       {children}
     </PortfolioContext.Provider>
   );
