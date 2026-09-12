@@ -13,10 +13,9 @@ import {
   CircleNotch,
 } from "@phosphor-icons/react";
 import { useApplications } from "../lib/ApplicationContext";
-import { rrs } from "../data/account";
 import {
   emptyCreditProfile,
-  scoreFromRRS,
+  fetchExternalCreditScore,
   tierFromScore,
   assessCredit,
   isValidTaxId,
@@ -62,7 +61,7 @@ export function Apply() {
     if (profile.creditScore !== null) return;
     setQueryingScore(true);
     window.setTimeout(() => {
-      setProfile((p) => ({ ...p, creditScore: scoreFromRRS(rrs.current) }));
+      setProfile((p) => ({ ...p, creditScore: fetchExternalCreditScore() }));
       setQueryingScore(false);
     }, 800);
   };
@@ -265,6 +264,9 @@ export function Apply() {
             <span className="flex items-center gap-1.5 text-sm font-medium text-ink">
               <ShieldCheck size={16} className="text-ink-muted" /> 信用紀錄與評分
             </span>
+            <p className="text-xs text-ink-muted">
+              資料來源：聯合徵信中心與往來銀行信用評等，非本平台自行評分。
+            </p>
             {profile.creditScore === null ? (
               <Button
                 variant="ghost"
@@ -274,7 +276,7 @@ export function Apply() {
                 disabled={queryingScore}
               >
                 {queryingScore ? <CircleNotch size={15} className="animate-spin" /> : null}
-                {queryingScore ? "查詢中…" : "查詢信用聯徵評分"}
+                {queryingScore ? "查詢中…" : "查詢往來銀行信用評等"}
               </Button>
             ) : (
               <div className="flex items-center gap-3 rounded-xl border border-hairline bg-plane px-3 py-2.5">

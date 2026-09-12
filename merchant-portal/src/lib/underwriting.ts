@@ -1,5 +1,3 @@
-import { clamp } from "./format";
-
 export interface CreditProfile {
   taxId: string;
   incomeTaxDocsUploaded: boolean; // 歷年營利事業所得稅申報資料（自開始繳納以來）
@@ -31,9 +29,10 @@ export const emptyCreditProfile: CreditProfile = {
   creditScore: null,
 };
 
-// 以 RRS（Revenue Reliability Score，0-100）換算成聯徵風格的信用評分（示範用途，非真實信用評分模型）。
-export function scoreFromRRS(rrs: number): number {
-  return Math.round(clamp(600 + rrs * 1.7, 550, 850));
+// 信用評分來自聯合徵信中心／往來銀行信用評等，非平台自行依 RRS 等內部數據計算。
+// 示範用途：固定回傳一筆模擬查詢結果，與商家其他數位營收資料無關。
+export function fetchExternalCreditScore(): number {
+  return 739;
 }
 
 export function tierFromScore(score: number): CreditTier {
