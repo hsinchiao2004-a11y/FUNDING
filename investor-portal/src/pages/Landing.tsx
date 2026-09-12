@@ -36,7 +36,7 @@ const steps = [
 const trustPoints = [
   { icon: Bank, label: "資金第三方信託保管" },
   { icon: Robot, label: "AI 持續監控營收異常" },
-  { icon: Receipt, label: "電子發票交叉驗證營收" },
+  { icon: Receipt, label: "多種資料交叉驗證營收" },
   { icon: ShieldCheck, label: "分潤結算全程可追蹤" },
 ];
 
