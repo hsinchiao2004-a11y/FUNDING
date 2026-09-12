@@ -10,25 +10,28 @@ import { Coupons } from "./pages/Coupons";
 import { PortfolioProvider } from "./lib/PortfolioContext";
 import { TransferMarketProvider } from "./lib/TransferMarketContext";
 import { CouponProvider } from "./lib/CouponContext";
+import { NotificationProvider } from "./lib/NotificationContext";
 
 export default function App() {
   return (
     <PortfolioProvider>
       <TransferMarketProvider>
         <CouponProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route element={<Layout />}>
-                <Route path="/" element={<Landing />} />
-                <Route path="/marketplace" element={<Marketplace />} />
-                <Route path="/merchants/:id" element={<MerchantDetail />} />
-                <Route path="/portfolio" element={<Portfolio />} />
-                <Route path="/transfers" element={<Transfers />} />
-                <Route path="/agents" element={<Agents />} />
-                <Route path="/coupons" element={<Coupons />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
+          <NotificationProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route element={<Layout />}>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/marketplace" element={<Marketplace />} />
+                  <Route path="/merchants/:id" element={<MerchantDetail />} />
+                  <Route path="/portfolio" element={<Portfolio />} />
+                  <Route path="/transfers" element={<Transfers />} />
+                  <Route path="/agents" element={<Agents />} />
+                  <Route path="/coupons" element={<Coupons />} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </NotificationProvider>
         </CouponProvider>
       </TransferMarketProvider>
     </PortfolioProvider>

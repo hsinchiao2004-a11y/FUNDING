@@ -9,7 +9,7 @@ import { PortfolioPieChart, type PieSlice } from "../components/PortfolioPieChar
 const suggestionByTier: Record<RiskTier, string> = {
   low: "營收穩定、風險偏低，AI 建議：維持現有部位，持續累積分潤。",
   medium: "營收處於成長期但波動較大，AI 建議：留意本月分潤入帳狀況，暫不加碼。",
-  elevated: "近期波動較高，AI 建議：可考慮於意向轉讓看板部分變現，分散風險。",
+  elevated: "近期波動較高，AI 建議：可考慮於轉讓看板部分變現，分散風險。",
 };
 
 export function Agents() {

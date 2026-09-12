@@ -73,7 +73,7 @@ export function Transfers() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-12">
-      <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">意向轉讓看板</h1>
+      <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">轉讓看板</h1>
       <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-secondary">
         為提升持有部位的流動性，投資人可張貼轉讓意向，由平台媒合審核後完成過戶——
         並非即時撮合、隨時可交易的公開次級市場。

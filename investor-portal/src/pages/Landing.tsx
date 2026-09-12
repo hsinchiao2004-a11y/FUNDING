@@ -157,7 +157,7 @@ export function Landing() {
             查看 AI Agent 詳情 →
           </Link>
         </div>
-        <div className="mt-8 max-w-3xl">
+        <div className="mx-auto mt-8 max-w-3xl">
           <div className="flex flex-col gap-4 rounded-2xl border border-hairline bg-surface p-6 sm:flex-row sm:items-start">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
               <MagnifyingGlass size={22} weight="duotone" />

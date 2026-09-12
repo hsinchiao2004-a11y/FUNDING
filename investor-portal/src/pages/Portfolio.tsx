@@ -47,7 +47,7 @@ export function Portfolio() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link to="/transfers" className={buttonClasses("ghost", "md")}>
-            <ArrowsLeftRight size={15} /> 前往意向轉讓看板
+            <ArrowsLeftRight size={15} /> 前往轉讓看板
           </Link>
           <Link to="/agents" className={buttonClasses("ghost", "md")}>
             <Robot size={15} /> AI 風險監測與建議
