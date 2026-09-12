@@ -1,17 +1,8 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Robot,
-  MagnifyingGlass,
-  Megaphone,
-  Storefront,
-  PaperPlaneTilt,
-  Sparkle,
-} from "@phosphor-icons/react";
+import { Robot, MagnifyingGlass, Storefront, Bell } from "@phosphor-icons/react";
 import { usePortfolio } from "../lib/PortfolioContext";
 import { getMerchant, merchants, type RiskTier } from "../data/merchants";
 import { RiskBadge } from "../components/Badge";
-import { Button } from "../components/Button";
 
 const suggestionByTier: Record<RiskTier, string> = {
   low: "營收穩定、風險偏低，AI 建議：維持現有部位，持續累積分潤。",
@@ -19,11 +10,8 @@ const suggestionByTier: Record<RiskTier, string> = {
   elevated: "近期波動較高，AI 建議：可考慮於意向轉讓看板部分變現，分散風險。",
 };
 
-const demoMerchant = merchants.find((m) => m.id === "riverside-pizza")!;
-
 export function Agents() {
   const { holdings } = usePortfolio();
-  const [messageSent, setMessageSent] = useState(false);
 
   const monitoredMerchants = holdings.length > 0
     ? Array.from(new Set(holdings.map((h) => h.merchantId))).map((id) => getMerchant(id)!).filter(Boolean)
@@ -37,12 +25,21 @@ export function Agents() {
         </div>
         <div>
           <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">AI Agent</h1>
-          <p className="text-sm text-ink-secondary">持續在背景運作的兩個代理式 AI 助理</p>
+          <p className="text-sm text-ink-secondary">持續在背景運作的風險監測管理 Agent</p>
         </div>
       </div>
 
+      <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-hairline bg-plane px-4 py-3 text-xs leading-relaxed text-ink-muted">
+        <Bell size={15} className="mt-0.5 shrink-0" />
+        <span>
+          另一個「投資人變消費者」促購 Agent 會在偵測到營收變化時，直接以右上角
+          <Bell size={13} weight="fill" className="mx-1 inline text-status-critical" />
+          通知的方式提醒你，不會顯示在這個頁面上。
+        </span>
+      </div>
+
       {holdings.length === 0 && (
-        <div className="mt-6 rounded-xl border border-hairline bg-plane px-4 py-3 text-xs text-ink-muted">
+        <div className="mt-4 rounded-xl border border-hairline bg-plane px-4 py-3 text-xs text-ink-muted">
           你還沒有任何投資，以下以 3 家商家做情境示範。
           <Link to="/marketplace" className="ml-1 font-medium text-accent-700 hover:text-accent-800">
             瀏覽商家 →
@@ -50,8 +47,7 @@ export function Agents() {
         </div>
       )}
 
-      {/* Agent 1: Risk monitoring */}
-      <section className="mt-10">
+      <section className="mt-8">
         <div className="flex items-center gap-2">
           <MagnifyingGlass size={18} weight="duotone" className="text-accent-600" />
           <h2 className="text-lg font-medium text-ink">風險監測管理 Agent</h2>
@@ -79,42 +75,6 @@ export function Agents() {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Agent 2: investor -> consumer activation */}
-      <section className="mt-12">
-        <div className="flex items-center gap-2">
-          <Megaphone size={18} weight="duotone" className="text-accent-600" />
-          <h2 className="text-lg font-medium text-ink">「投資人變消費者」促購 Agent</h2>
-        </div>
-        <p className="mt-1 max-w-xl text-sm leading-relaxed text-ink-secondary">
-          偵測到已投資商家營收下滑時，不是被動通知「分潤可能變少」，而是主動生成一則邀請消費的訊息，
-          把投資人的焦慮轉化成幫商家拉抬營收的具體行動。
-        </p>
-
-        <div className="mt-5 rounded-2xl border border-hairline bg-surface p-6">
-          <div className="flex items-start gap-3 rounded-xl border border-status-warning/30 bg-status-warning/10 p-4">
-            <Sparkle size={18} weight="fill" className="mt-0.5 shrink-0 text-[#946200]" />
-            <p className="text-sm text-[#946200]">
-              情境示範：AI 偵測到 {demoMerchant.name} 本月營收較上月略降，已為你生成一則邀請消費的訊息。
-            </p>
-          </div>
-
-          <div className="mt-4 rounded-xl border border-hairline bg-plane p-4">
-            <p className="text-sm leading-relaxed text-ink">
-              「好久不見！{demoMerchant.name}最近推出新菜單，身為投資人的你享有專屬優惠——
-              這週到店消費享 9 折，順便看看你投資的店最近的樣子 😊」
-            </p>
-          </div>
-
-          <div className="mt-4 flex items-center gap-3">
-            <Button size="md" onClick={() => setMessageSent(true)} disabled={messageSent}>
-              <PaperPlaneTilt size={15} />
-              {messageSent ? "已分享給朋友" : "分享給朋友"}
-            </Button>
-            {messageSent && <span className="text-xs text-accent-700">已模擬送出（示範，不會真的發送）</span>}
-          </div>
         </div>
       </section>
     </div>

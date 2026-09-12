@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import clsx from "clsx";
 import { ArrowsLeftRight } from "@phosphor-icons/react";
 import { buttonClasses } from "./Button";
+import { NotificationBell } from "./NotificationBell";
 
 export function Nav() {
   return (
@@ -17,13 +18,13 @@ export function Nav() {
           <span className="text-[15px] font-medium tracking-tight text-ink">旺舖</span>
         </NavLink>
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-0.5 sm:gap-2">
           <NavLink
             to="/transfers"
             aria-label="轉讓看板"
             className={({ isActive }) =>
               clsx(
-                "flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-2 text-sm font-medium transition-colors sm:px-4",
+                "flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-2 text-sm font-medium transition-colors sm:px-4",
                 isActive ? "bg-accent-50 text-accent-700" : "text-ink-secondary hover:text-ink",
               )
             }
@@ -31,12 +32,13 @@ export function Nav() {
             <ArrowsLeftRight size={16} />
             <span className="hidden sm:inline">轉讓看板</span>
           </NavLink>
+          <NotificationBell />
           <NavLink
             to="/marketplace"
             className={({ isActive }) =>
               clsx(
                 buttonClasses("primary", "md"),
-                "!px-3 sm:!px-5",
+                "!px-2.5 sm:!px-5",
                 isActive && "ring-2 ring-accent-800 ring-offset-2 ring-offset-plane",
               )
             }
@@ -48,7 +50,7 @@ export function Nav() {
             className={({ isActive }) =>
               clsx(
                 buttonClasses("primary", "md"),
-                "!px-3 sm:!px-5",
+                "!px-2.5 sm:!px-5",
                 isActive && "ring-2 ring-accent-800 ring-offset-2 ring-offset-plane",
               )
             }
