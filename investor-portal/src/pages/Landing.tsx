@@ -174,7 +174,7 @@ export function Landing() {
             </div>
             <h3 className="font-medium text-ink">「投資人變消費者」促購 Agent</h3>
             <p className="text-sm leading-relaxed text-ink-secondary">
-              偵測到投資商家營收下滑時，主動生成邀請消費的訊息，把焦慮轉化成幫商家拉抬營收的具體行動。
+              偵測到投資商家營收不如預期時，主動生成邀請消費的訊息，把焦慮轉化成幫商家拉抬營收的具體行動。
             </p>
           </div>
         </div>

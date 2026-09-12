@@ -90,6 +90,6 @@ export const aiSuggestions = [
   {
     type: "promo" as const,
     title: "AI 建議提供優惠吸引投資人消費",
-    body: "本月營收成長趨緩，AI 建議提供「到店消費享 9 折」優惠，促購 Agent 將據此生成邀請投資人到店消費的訊息。",
+    body: "本月營收不如預期，AI 建議提供「到店消費享 9 折」優惠，促購 Agent 將據此生成邀請投資人到店消費的訊息。",
   },
 ];

@@ -18,7 +18,7 @@ interface NotificationState {
 
 const NotificationContext = createContext<NotificationState | null>(null);
 
-// 「投資人變消費者」促購 Agent 的產出：偵測到投資商家營收下滑時自動生成的邀請消費通知（情境示範）。
+// 「投資人變消費者」促購 Agent 的產出：偵測到投資商家營收不如預期時自動生成的邀請消費通知（情境示範）。
 const seedNotifications: AgentNotification[] = [
   {
     id: "n1",
