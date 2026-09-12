@@ -8,7 +8,6 @@ import {
   Bank,
   Robot,
   Receipt,
-  Megaphone,
 } from "@phosphor-icons/react";
 import { merchants } from "../data/merchants";
 import { HeroPreview } from "../components/HeroPreview";
@@ -158,7 +157,7 @@ export function Landing() {
             查看 AI Agent 詳情 →
           </Link>
         </div>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="mt-8 max-w-lg">
           <div className="flex flex-col gap-3 rounded-2xl border border-hairline bg-surface p-6">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
               <MagnifyingGlass size={22} weight="duotone" />
@@ -166,15 +165,6 @@ export function Landing() {
             <h3 className="font-medium text-ink">風險監測管理 Agent</h3>
             <p className="text-sm leading-relaxed text-ink-secondary">
               持續掃描你持有的每一筆分潤權與商家風險狀態，主動給出建議，而不是等你自己發現異常。
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 rounded-2xl border border-hairline bg-surface p-6">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
-              <Megaphone size={22} weight="duotone" />
-            </div>
-            <h3 className="font-medium text-ink">「投資人變消費者」促購 Agent</h3>
-            <p className="text-sm leading-relaxed text-ink-secondary">
-              偵測到投資商家營收不如預期時，主動生成邀請消費的訊息，把焦慮轉化成幫商家拉抬營收的具體行動。
             </p>
           </div>
         </div>

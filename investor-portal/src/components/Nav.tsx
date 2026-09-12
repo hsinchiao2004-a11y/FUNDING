@@ -2,7 +2,6 @@ import { NavLink } from "react-router-dom";
 import clsx from "clsx";
 import { ArrowsLeftRight } from "@phosphor-icons/react";
 import { buttonClasses } from "./Button";
-import { NotificationBell } from "./NotificationBell";
 
 export function Nav() {
   return (
@@ -56,7 +55,6 @@ export function Nav() {
           >
             我的投資
           </NavLink>
-          <NotificationBell />
         </div>
       </div>
     </header>

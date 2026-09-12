@@ -58,12 +58,6 @@ export function Portfolio() {
           >
             查看 AI Agent 風險監測與建議 →
           </Link>
-          <Link
-            to="/coupons"
-            className="text-sm font-medium text-accent-700 hover:text-accent-800"
-          >
-            我的優惠票券 →
-          </Link>
         </div>
       </div>
 
