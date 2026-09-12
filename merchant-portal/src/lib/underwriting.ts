@@ -1,4 +1,5 @@
 export interface CreditProfile {
+  companyName: string;
   taxId: string;
   incomeTaxDocsUploaded: boolean; // 歷年營利事業所得稅申報資料（自開始繳納以來）
   businessTaxDocsUploaded: boolean; // 歷年營業稅籍資料（自開始繳納以來）
@@ -20,6 +21,7 @@ export interface CreditAssessment {
 }
 
 export const emptyCreditProfile: CreditProfile = {
+  companyName: "",
   taxId: "",
   incomeTaxDocsUploaded: false,
   businessTaxDocsUploaded: false,

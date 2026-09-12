@@ -4,6 +4,7 @@ import {
   Info,
   Plus,
   Trash,
+  Buildings,
   IdentificationCard,
   Receipt,
   Bank,
@@ -51,11 +52,12 @@ export function Apply() {
   const [items, setItems] = useState<AllocationItem[]>(initialItems);
   const nextId = useRef(initialItems.length + 1);
 
+  const companyNameValid = profile.companyName.trim() !== "";
   const taxIdValid = isValidTaxId(profile.taxId);
   const bankAccountsValid =
     profile.bankAccounts.length > 0 && profile.bankAccounts.every((a) => a.trim() !== "");
   const canProceedToResult =
-    taxIdValid && profile.incomeTaxDocsUploaded && profile.businessTaxDocsUploaded &&
+    companyNameValid && taxIdValid && profile.incomeTaxDocsUploaded && profile.businessTaxDocsUploaded &&
     bankAccountsValid &&
     profile.bankStatementUploaded && profile.creditScore !== null;
 
@@ -125,7 +127,7 @@ export function Apply() {
         </div>
         <h1 className="mt-4 text-2xl font-medium tracking-tight text-ink">申請已送出（示範）</h1>
         <p className="mt-2 text-sm text-ink-secondary">
-          申請金額 {formatTWD(amount)}，平台將於 1–2 個工作天內完成 AI 風險評估與人工審查。
+          {profile.companyName || "貴公司"}申請金額 {formatTWD(amount)}，平台將於 1–2 個工作天內完成 AI 風險評估與人工審查。
         </p>
         <Button className="mt-6" onClick={() => setStage("amount")}>
           再送一筆申請
@@ -152,6 +154,19 @@ export function Apply() {
         </div>
 
         <div className="mt-6 flex flex-col gap-5 rounded-2xl border border-hairline bg-surface p-6">
+          <div className="flex flex-col gap-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-ink">
+              <Buildings size={16} className="text-ink-muted" /> 公司名稱
+            </label>
+            <input
+              type="text"
+              value={profile.companyName}
+              onChange={(e) => setProfile((p) => ({ ...p, companyName: e.target.value }))}
+              placeholder="例如：花見咖啡有限公司"
+              className="rounded-xl border border-hairline bg-plane px-3 py-2 text-sm text-ink outline-none focus:border-accent-400"
+            />
+          </div>
+
           <div className="flex flex-col gap-1.5">
             <label className="flex items-center gap-1.5 text-sm font-medium text-ink">
               <IdentificationCard size={16} className="text-ink-muted" /> 統一編號
