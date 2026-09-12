@@ -53,10 +53,7 @@ export function NotificationBell() {
                 if (!merchant) return null;
                 return (
                   <div key={n.id} className="rounded-xl border border-hairline bg-plane p-3.5">
-                    <p className="text-xs text-ink-muted">
-                      AI 偵測到 {merchant.name} 本月營收較上月略降，已為你生成一則邀請消費的訊息。
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-ink">{n.message}</p>
+                    <p className="text-sm leading-relaxed text-ink">{n.message}</p>
                     <div className="mt-3 flex items-center gap-2">
                       <Button size="md" onClick={() => markShared(n.id)} disabled={n.shared}>
                         <PaperPlaneTilt size={14} />

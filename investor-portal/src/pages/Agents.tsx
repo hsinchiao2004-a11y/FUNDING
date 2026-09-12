@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Robot, MagnifyingGlass, Storefront, Bell } from "@phosphor-icons/react";
+import { Robot, MagnifyingGlass, Storefront } from "@phosphor-icons/react";
 import { usePortfolio } from "../lib/PortfolioContext";
 import { getMerchant, merchants, type RiskTier } from "../data/merchants";
 import { RiskBadge } from "../components/Badge";
@@ -27,15 +27,6 @@ export function Agents() {
           <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">AI Agent</h1>
           <p className="text-sm text-ink-secondary">持續在背景運作的風險監測管理 Agent</p>
         </div>
-      </div>
-
-      <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-hairline bg-plane px-4 py-3 text-xs leading-relaxed text-ink-muted">
-        <Bell size={15} className="mt-0.5 shrink-0" />
-        <span>
-          另一個「投資人變消費者」促購 Agent 會在偵測到營收變化時，直接以右上角
-          <Bell size={13} weight="fill" className="mx-1 inline text-status-critical" />
-          通知的方式提醒你，不會顯示在這個頁面上。
-        </span>
       </div>
 
       {holdings.length === 0 && (
