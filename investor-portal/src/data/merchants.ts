@@ -21,7 +21,11 @@ export interface Merchant {
     estTermMonths: [number, number];
     useOfFunds: { label: string; pct: number }[];
   };
-  perks: string[];
+  rewardTiers: { minAmount: number; label: string }[];
+  growthMilestone: {
+    targetMonthlyRevenue: number;
+    reward: string;
+  };
   story: string;
 }
 
@@ -53,7 +57,15 @@ export const merchants: Merchant[] = [
         { label: "設備採購", pct: 20 },
       ],
     },
-    perks: ["投資人專屬 9 折會員卡", "新品優先試喝資格", "季度店主見面會"],
+    rewardTiers: [
+      { minAmount: 1_000, label: "投資人專屬 9 折會員卡" },
+      { minAmount: 5_000, label: "新品優先試喝資格" },
+      { minAmount: 20_000, label: "季度店主見面會" },
+    ],
+    growthMilestone: {
+      targetMonthlyRevenue: 1_200_000,
+      reward: "達標後商家可享提前還款 5% 折讓，投資人取得下一輪優先加碼認購資格",
+    },
     story: "從一間 12 坪的選豆吧起家，靠社群口碑做到大安區排隊名店，現在要開第二間店。",
   },
   {
@@ -81,7 +93,14 @@ export const merchants: Merchant[] = [
         { label: "設備採購", pct: 20 },
       ],
     },
-    perks: ["投資人專屬選品優先購", "生活選物體驗日邀請"],
+    rewardTiers: [
+      { minAmount: 1_000, label: "投資人專屬選品優先購" },
+      { minAmount: 10_000, label: "生活選物體驗日邀請" },
+    ],
+    growthMilestone: {
+      targetMonthlyRevenue: 850_000,
+      reward: "達標後商家可享提前還款折讓，投資人取得下一輪優先加碼認購資格",
+    },
     story: "以在地職人選品聞名，兩間門市營運穩定，準備進駐台中最新商場拓點。",
   },
   {
@@ -109,7 +128,14 @@ export const merchants: Merchant[] = [
         { label: "廚房設備", pct: 20 },
       ],
     },
-    perks: ["投資人專屬招待券 6 張／年", "尾牙聚餐優先席位"],
+    rewardTiers: [
+      { minAmount: 1_000, label: "投資人專屬招待券 6 張／年" },
+      { minAmount: 10_000, label: "尾牙聚餐優先席位" },
+    ],
+    growthMilestone: {
+      targetMonthlyRevenue: 1_300_000,
+      reward: "達標後商家可享提前還款折讓，投資人取得下一輪優先加碼認購資格",
+    },
     story: "深耕板橋 8 年的排隊名店，營收穩定成長，準備開出第二間分店。",
   },
   {
@@ -137,7 +163,14 @@ export const merchants: Merchant[] = [
         { label: "門市改裝", pct: 20 },
       ],
     },
-    perks: ["投資人專屬手作體驗課", "新品上市搶先購"],
+    rewardTiers: [
+      { minAmount: 1_000, label: "投資人專屬手作體驗課" },
+      { minAmount: 10_000, label: "新品上市搶先購" },
+    ],
+    growthMilestone: {
+      targetMonthlyRevenue: 550_000,
+      reward: "達標後商家可享提前還款折讓，投資人取得下一輪優先加碼認購資格",
+    },
     story: "手工皂與保養品牌，電商與門市雙軌成長，正在擴充產能因應通路詢單。",
   },
   {
@@ -165,7 +198,14 @@ export const merchants: Merchant[] = [
         { label: "行銷推廣", pct: 20 },
       ],
     },
-    perks: ["投資人專屬野餐日邀請", "會員價 8 折"],
+    rewardTiers: [
+      { minAmount: 1_000, label: "投資人專屬野餐日邀請" },
+      { minAmount: 10_000, label: "會員價 8 折" },
+    ],
+    growthMilestone: {
+      targetMonthlyRevenue: 650_000,
+      reward: "達標後商家可享提前還款折讓，投資人取得下一輪優先加碼認購資格",
+    },
     story: "安平運河畔人氣柴燒披薩店，開幕兩年翻桌率持續上升，計畫擴建戶外座位。",
   },
   {
@@ -193,7 +233,14 @@ export const merchants: Merchant[] = [
         { label: "空間裝修", pct: 25 },
       ],
     },
-    perks: ["投資人專屬選書社群", "讀書會優先報名"],
+    rewardTiers: [
+      { minAmount: 1_000, label: "投資人專屬選書社群" },
+      { minAmount: 10_000, label: "讀書會優先報名" },
+    ],
+    growthMilestone: {
+      targetMonthlyRevenue: 650_000,
+      reward: "達標後商家可享提前還款折讓，投資人取得下一輪優先加碼認購資格",
+    },
     story: "獨立書店與選物複合空間，社群黏著度高，準備在中山商圈開設第二據點。",
   },
 ];

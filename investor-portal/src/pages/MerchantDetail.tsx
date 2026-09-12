@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
+import clsx from "clsx";
 import {
   Storefront,
   CalendarBlank,
   Buildings,
   CheckCircle,
+  Lock,
   Sparkle,
+  Flag,
 } from "@phosphor-icons/react";
 import { getMerchant } from "../data/merchants";
 import { RevenueChart } from "../components/RevenueChart";
@@ -108,15 +111,66 @@ export function MerchantDetail() {
           </section>
 
           <section>
-            <h2 className="text-lg font-medium text-ink">投資人專屬權益</h2>
+            <h2 className="text-lg font-medium text-ink">分級回饋</h2>
+            <p className="mt-1 text-sm text-ink-secondary">依你右側填寫的投資金額，即時解鎖對應權益。</p>
             <ul className="mt-5 flex flex-col gap-3">
-              {merchant.perks.map((perk) => (
-                <li key={perk} className="flex items-start gap-3 text-sm text-ink-secondary">
-                  <CheckCircle size={18} weight="fill" className="mt-0.5 shrink-0 text-accent-600" />
-                  {perk}
-                </li>
-              ))}
+              {merchant.rewardTiers.map((tier) => {
+                const unlocked = amount >= tier.minAmount;
+                return (
+                  <li
+                    key={tier.label}
+                    className={clsx(
+                      "flex items-start gap-3 rounded-xl border p-3.5 text-sm transition-colors",
+                      unlocked
+                        ? "border-accent-200 bg-accent-50 text-ink"
+                        : "border-hairline bg-surface text-ink-muted",
+                    )}
+                  >
+                    {unlocked ? (
+                      <CheckCircle size={18} weight="fill" className="mt-0.5 shrink-0 text-accent-600" />
+                    ) : (
+                      <Lock size={18} className="mt-0.5 shrink-0 text-ink-muted" />
+                    )}
+                    <div>
+                      <p>{tier.label}</p>
+                      {!unlocked && (
+                        <p className="mt-0.5 text-xs text-ink-muted">
+                          投資滿 {formatTWD(tier.minAmount)} 解鎖
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-medium text-ink">商家成長里程碑</h2>
+            <p className="mt-1 text-sm text-ink-secondary">
+              商家月營收達標後，將解鎖提前還款折讓與投資人優先加碼權。
+            </p>
+            <div className="mt-5 rounded-2xl border border-hairline bg-surface p-6">
+              <div className="flex items-start gap-3">
+                <Flag size={20} weight="duotone" className="mt-0.5 shrink-0 text-accent-600" />
+                <div className="flex-1">
+                  <div className="flex items-baseline justify-between text-sm">
+                    <span className="text-ink-secondary">
+                      本月營收 {formatCompactTWD(merchant.monthlyRevenue.at(-1)!)}
+                    </span>
+                    <span className="tabular text-ink-muted">
+                      目標 {formatCompactTWD(merchant.growthMilestone.targetMonthlyRevenue)}
+                    </span>
+                  </div>
+                  <ProgressBar
+                    value={merchant.monthlyRevenue.at(-1)!}
+                    max={merchant.growthMilestone.targetMonthlyRevenue}
+                    className="mt-2"
+                  />
+                  <p className="mt-3 text-sm text-ink-secondary">{merchant.growthMilestone.reward}</p>
+                </div>
+              </div>
+            </div>
           </section>
 
           <section>
