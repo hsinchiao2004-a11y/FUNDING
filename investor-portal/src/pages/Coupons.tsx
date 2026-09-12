@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Ticket, Storefront, CheckCircle, LockSimple } from "@phosphor-icons/react";
+import { X, Ticket, Storefront, CheckCircle } from "@phosphor-icons/react";
 import { useCoupons, type Coupon } from "../lib/CouponContext";
 import { usePortfolio } from "../lib/PortfolioContext";
 import { getMerchant } from "../data/merchants";
@@ -60,7 +60,6 @@ export function Coupons() {
   const isInvested = (merchantId: string) => investedMerchantIds.has(merchantId);
 
   const available = coupons.filter((c) => !c.claimed && isInvested(c.merchantId));
-  const locked = coupons.filter((c) => !c.claimed && !isInvested(c.merchantId));
   const myUnused = coupons.filter((c) => c.claimed && c.status === "unused");
   const myUsed = coupons.filter((c) => c.claimed && c.status === "used");
 
@@ -97,39 +96,6 @@ export function Coupons() {
                   <Button size="md" onClick={() => claim(coupon.id)}>
                     領取
                   </Button>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {locked.length > 0 && (
-        <section className="mt-8">
-          <h2 className="text-sm font-medium text-ink-secondary">尚未解鎖</h2>
-          <div className="mt-3 flex flex-col gap-3">
-            {locked.map((coupon) => {
-              const merchant = getMerchant(coupon.merchantId);
-              if (!merchant) return null;
-              return (
-                <div
-                  key={coupon.id}
-                  className="flex flex-col gap-3 rounded-2xl border border-hairline bg-plane p-5 opacity-60 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface text-ink-muted">
-                      <Ticket size={18} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-ink-secondary">{coupon.offer}</p>
-                      <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs text-ink-muted">
-                        <Storefront size={13} /> {merchant.name}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted">
-                    <LockSimple size={13} /> 投資後解鎖
-                  </span>
                 </div>
               );
             })}
@@ -193,6 +159,12 @@ export function Coupons() {
             })}
           </div>
         </section>
+      )}
+
+      {available.length === 0 && myUnused.length === 0 && myUsed.length === 0 && (
+        <div className="mt-10 rounded-2xl border border-dashed border-hairline p-8 text-center">
+          <p className="text-sm text-ink-muted">投資商家後，這裡會出現你的專屬到店優惠。</p>
+        </div>
       )}
 
       {selected && <CouponDetail coupon={selected} onClose={() => setSelected(null)} />}
