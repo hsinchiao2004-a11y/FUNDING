@@ -10,7 +10,6 @@ import {
   Receipt,
 } from "@phosphor-icons/react";
 import { merchants } from "../data/merchants";
-import { EntryGate } from "../components/EntryGate";
 import { HeroPreview } from "../components/HeroPreview";
 import { FlowLoop } from "../components/FlowLoop";
 import { MerchantCard } from "../components/MerchantCard";
@@ -46,8 +45,6 @@ export function Landing() {
 
   return (
     <div>
-      <EntryGate />
-
       {/* Hero — split, not centered */}
       <section className="mx-auto grid max-w-7xl gap-10 px-6 pt-16 pb-20 lg:grid-cols-2 lg:items-center lg:pt-20 lg:pb-28">
         <div className="flex flex-col items-start gap-6">

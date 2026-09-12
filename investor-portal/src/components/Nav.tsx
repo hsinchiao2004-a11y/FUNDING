@@ -8,7 +8,7 @@ export function Nav() {
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-plane/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-1 px-2 sm:gap-3 sm:px-6">
-        <NavLink to="/" className="flex shrink-0 items-center gap-1.5">
+        <NavLink to="/investor" className="flex shrink-0 items-center gap-1.5">
           <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden>
             <rect width="32" height="32" rx="8" fill="#059669" />
             <rect x="7" y="17" width="4" height="9" rx="1.5" fill="#ecfdf5" />

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
+import { Gate } from "./pages/Gate";
 import { Landing } from "./pages/Landing";
 import { Marketplace } from "./pages/Marketplace";
 import { MerchantDetail } from "./pages/MerchantDetail";
@@ -20,8 +21,9 @@ export default function App() {
           <NotificationProvider>
             <BrowserRouter>
               <Routes>
+                <Route path="/" element={<Gate />} />
                 <Route element={<Layout />}>
-                  <Route path="/" element={<Landing />} />
+                  <Route path="/investor" element={<Landing />} />
                   <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/merchants/:id" element={<MerchantDetail />} />
                   <Route path="/portfolio" element={<Portfolio />} />
