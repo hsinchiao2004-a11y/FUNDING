@@ -2,7 +2,7 @@ import { clamp } from "./format";
 
 export interface CreditProfile {
   taxId: string;
-  taxAmount: number;
+  taxDocsUploaded: boolean; // 歷年營利事業所得稅申報資料（自開始繳納以來）
   bankAccount: string;
   bankStatementUploaded: boolean;
   posConnected: boolean;
@@ -22,7 +22,7 @@ export interface CreditAssessment {
 
 export const emptyCreditProfile: CreditProfile = {
   taxId: "",
-  taxAmount: 0,
+  taxDocsUploaded: false,
   bankAccount: "",
   bankStatementUploaded: false,
   posConnected: false,
