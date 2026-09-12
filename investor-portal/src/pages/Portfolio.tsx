@@ -1,14 +1,22 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Wallet, Storefront, TrendUp, Compass } from "@phosphor-icons/react";
+import { Wallet, Storefront, TrendUp, Compass, Coins, Ticket } from "@phosphor-icons/react";
 import { usePortfolio } from "../lib/PortfolioContext";
 import { getMerchant } from "../data/merchants";
 import { StatTile } from "../components/StatTile";
-import { buttonClasses } from "../components/Button";
+import { Button, buttonClasses } from "../components/Button";
 import { formatTWD } from "../lib/format";
 
 export function Portfolio() {
-  const { holdings, totalInvested } = usePortfolio();
+  const {
+    holdings,
+    storeCredits,
+    totalCashWithdrawn,
+    totalInvested,
+    totalAccruedDividend,
+    redeemCash,
+    redeemAsCredit,
+  } = usePortfolio();
 
   const merchantsInvested = useMemo(
     () => new Set(holdings.map((h) => h.merchantId)).size,
@@ -73,22 +81,59 @@ export function Portfolio() {
             />
           </div>
 
+          {(totalAccruedDividend > 0 || totalCashWithdrawn > 0 || storeCredits.length > 0) && (
+            <section className="mt-10">
+              <h2 className="text-lg font-medium text-ink">分潤總覽</h2>
+              <p className="mt-1 text-sm text-ink-secondary">
+                分潤除了提領現金，也可以加碼 20% 折抵為到店消費金——把投資收益導回實際消費。
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-6 rounded-2xl border border-hairline bg-surface p-6 sm:grid-cols-3">
+                <StatTile label="可運用分潤（尚未提領）" value={formatTWD(totalAccruedDividend)} />
+                <StatTile label="累計已提領現金" value={formatTWD(totalCashWithdrawn)} />
+                <StatTile
+                  label="消費金餘額"
+                  value={formatTWD(storeCredits.reduce((sum, c) => sum + c.amount, 0))}
+                />
+              </div>
+
+              {storeCredits.length > 0 && (
+                <div className="mt-4 flex flex-col gap-2">
+                  {storeCredits.map((credit) => {
+                    const merchant = getMerchant(credit.merchantId);
+                    if (!merchant) return null;
+                    return (
+                      <div
+                        key={credit.merchantId}
+                        className="flex items-center justify-between rounded-xl border border-hairline bg-plane px-4 py-2.5"
+                      >
+                        <span className="inline-flex items-center gap-2 text-sm text-ink-secondary">
+                          <Ticket size={15} weight="duotone" className="text-accent-600" />
+                          {merchant.name} 消費金
+                        </span>
+                        <span className="tabular font-mono text-sm font-medium text-ink">
+                          {formatTWD(credit.amount)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )}
+
           <h2 className="mt-12 text-lg font-medium text-ink">持有明細</h2>
           <div className="mt-5 flex flex-col divide-y divide-hairline rounded-2xl border border-hairline bg-surface">
-            {holdings
-              .slice()
-              .reverse()
-              .map((holding, i) => {
-                const merchant = getMerchant(holding.merchantId);
-                if (!merchant) return null;
-                const investedDate = new Date(holding.investedAt);
-                return (
-                  <Link
-                    key={i}
-                    to={`/merchants/${merchant.id}`}
-                    className="flex items-center justify-between gap-4 p-5 transition-colors hover:bg-plane"
-                  >
-                    <div className="flex items-center gap-3">
+            {holdings.map((holding, i) => {
+              const merchant = getMerchant(holding.merchantId);
+              if (!merchant) return null;
+              const investedDate = new Date(holding.investedAt);
+              return (
+                <div key={i} className="flex flex-col gap-4 p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <Link
+                      to={`/merchants/${merchant.id}`}
+                      className="flex items-center gap-3 hover:opacity-80"
+                    >
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
                         <Storefront size={18} weight="duotone" />
                       </div>
@@ -98,27 +143,43 @@ export function Portfolio() {
                           投資於 {investedDate.toLocaleDateString("zh-Hant-TW")}
                         </p>
                       </div>
+                    </Link>
+                    <div className="text-right">
+                      <p className="tabular font-mono text-sm font-medium text-ink">
+                        {formatTWD(holding.amount)}
+                      </p>
+                      <p className="inline-flex items-center gap-1 text-xs text-ink-muted">
+                        <TrendUp size={13} />
+                        預估 {merchant.financing.expectedAnnualReturn[0]}–{merchant.financing.expectedAnnualReturn[1]}%
+                      </p>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <p className="tabular font-mono text-sm font-medium text-ink">
-                          {formatTWD(holding.amount)}
-                        </p>
-                        <p className="inline-flex items-center gap-1 text-xs text-ink-muted">
-                          <TrendUp size={13} />
-                          預估 {merchant.financing.expectedAnnualReturn[0]}–{merchant.financing.expectedAnnualReturn[1]}%
-                        </p>
+                  </div>
+
+                  {holding.accruedDividend > 0 && (
+                    <div className="flex flex-col gap-2.5 rounded-xl border border-hairline bg-plane p-3.5 sm:flex-row sm:items-center sm:justify-between">
+                      <span className="inline-flex items-center gap-1.5 text-sm text-ink-secondary">
+                        <Coins size={15} weight="duotone" className="text-accent-600" />
+                        本筆已入帳分潤 <span className="tabular font-mono text-ink">{formatTWD(holding.accruedDividend)}</span>
+                      </span>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="md" onClick={() => redeemCash(i)}>
+                          提領現金
+                        </Button>
+                        <Button size="md" onClick={() => redeemAsCredit(i)}>
+                          折抵消費金 (+20%)
+                        </Button>
                       </div>
                     </div>
-                  </Link>
-                );
-              })}
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           <div className="mt-8 flex items-start gap-3 rounded-xl border border-hairline bg-plane p-4">
             <Wallet size={18} weight="duotone" className="mt-0.5 shrink-0 text-accent-600" />
             <p className="text-xs leading-relaxed text-ink-muted">
-              分潤依商家實際月營收提撥，尚未進入回收期的投資會先顯示「等待首期分潤」，此頁面之報酬數字為預估區間，不代表保證收益。
+              分潤依商家實際月營收提撥，尚未進入回收期的投資會先顯示「等待首期分潤」，此頁面之報酬數字與已入帳分潤均為示範用途，不代表保證收益。
             </p>
           </div>
         </>
