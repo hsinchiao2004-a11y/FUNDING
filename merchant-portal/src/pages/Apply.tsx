@@ -54,7 +54,8 @@ export function Apply() {
 
   const taxIdValid = isValidTaxId(profile.taxId);
   const canProceedToResult =
-    taxIdValid && profile.taxDocsUploaded && profile.bankAccount.trim() !== "" &&
+    taxIdValid && profile.incomeTaxDocsUploaded && profile.businessTaxDocsUploaded &&
+    profile.bankAccount.trim() !== "" &&
     profile.bankStatementUploaded && profile.creditScore !== null;
 
   const queryCreditScore = () => {
@@ -159,12 +160,12 @@ export function Apply() {
               <Receipt size={16} className="text-ink-muted" /> 歷年營利事業所得稅申報資料
             </span>
             <p className="text-xs text-ink-muted">請上傳自開始繳納營利事業所得稅以來的歷年申報資料。</p>
-            {profile.taxDocsUploaded ? (
+            {profile.incomeTaxDocsUploaded ? (
               <div className="flex items-center justify-between rounded-xl border border-hairline bg-plane px-3 py-2">
                 <span className="text-sm text-ink-secondary">歷年營利事業所得稅申報資料.pdf 已上傳</span>
                 <button
                   type="button"
-                  onClick={() => setProfile((p) => ({ ...p, taxDocsUploaded: false }))}
+                  onClick={() => setProfile((p) => ({ ...p, incomeTaxDocsUploaded: false }))}
                   className="text-ink-muted hover:text-status-critical"
                   aria-label="移除已上傳檔案"
                 >
@@ -174,10 +175,38 @@ export function Apply() {
             ) : (
               <button
                 type="button"
-                onClick={() => setProfile((p) => ({ ...p, taxDocsUploaded: true }))}
+                onClick={() => setProfile((p) => ({ ...p, incomeTaxDocsUploaded: true }))}
                 className="inline-flex w-fit items-center gap-1.5 rounded-xl border border-dashed border-hairline px-3 py-2 text-sm text-ink-secondary hover:border-accent-400 hover:text-accent-700"
               >
                 <FileArrowUp size={16} /> 上傳歷年營利事業所得稅申報資料（示範：點擊即模擬上傳）
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="flex items-center gap-1.5 text-sm font-medium text-ink">
+              <Receipt size={16} className="text-ink-muted" /> 歷年營業稅籍資料
+            </span>
+            <p className="text-xs text-ink-muted">請上傳自開始繳納營業稅以來的歷年申報資料。</p>
+            {profile.businessTaxDocsUploaded ? (
+              <div className="flex items-center justify-between rounded-xl border border-hairline bg-plane px-3 py-2">
+                <span className="text-sm text-ink-secondary">歷年營業稅籍資料.pdf 已上傳</span>
+                <button
+                  type="button"
+                  onClick={() => setProfile((p) => ({ ...p, businessTaxDocsUploaded: false }))}
+                  className="text-ink-muted hover:text-status-critical"
+                  aria-label="移除已上傳檔案"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setProfile((p) => ({ ...p, businessTaxDocsUploaded: true }))}
+                className="inline-flex w-fit items-center gap-1.5 rounded-xl border border-dashed border-hairline px-3 py-2 text-sm text-ink-secondary hover:border-accent-400 hover:text-accent-700"
+              >
+                <FileArrowUp size={16} /> 上傳歷年營業稅籍資料（示範：點擊即模擬上傳）
               </button>
             )}
           </div>
