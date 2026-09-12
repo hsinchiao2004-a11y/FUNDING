@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { X, Ticket, Storefront, CheckCircle } from "@phosphor-icons/react";
+import { X, Ticket, Storefront, CheckCircle, LockSimple } from "@phosphor-icons/react";
 import { useCoupons, type Coupon } from "../lib/CouponContext";
+import { usePortfolio } from "../lib/PortfolioContext";
 import { getMerchant } from "../data/merchants";
 import { Button } from "../components/Button";
 
@@ -52,9 +53,14 @@ function CouponDetail({ coupon, onClose }: { coupon: Coupon; onClose: () => void
 
 export function Coupons() {
   const { coupons, claim } = useCoupons();
+  const { holdings } = usePortfolio();
   const [selected, setSelected] = useState<Coupon | null>(null);
 
-  const available = coupons.filter((c) => !c.claimed);
+  const investedMerchantIds = new Set(holdings.map((h) => h.merchantId));
+  const isInvested = (merchantId: string) => investedMerchantIds.has(merchantId);
+
+  const available = coupons.filter((c) => !c.claimed && isInvested(c.merchantId));
+  const locked = coupons.filter((c) => !c.claimed && !isInvested(c.merchantId));
   const myUnused = coupons.filter((c) => c.claimed && c.status === "unused");
   const myUsed = coupons.filter((c) => c.claimed && c.status === "used");
 
@@ -62,7 +68,7 @@ export function Coupons() {
     <div className="mx-auto max-w-3xl px-6 py-14">
       <h1 className="text-3xl font-medium tracking-tight text-ink">優惠券</h1>
       <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-secondary">
-        商家提供給投資人的到店優惠，領取後可到店出示 QR Code 兌換。
+        商家提供給投資人的到店優惠，投資該商家後即可領取，領取後可到店出示 QR Code 兌換。
       </p>
 
       {available.length > 0 && (
@@ -91,6 +97,39 @@ export function Coupons() {
                   <Button size="md" onClick={() => claim(coupon.id)}>
                     領取
                   </Button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {locked.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-sm font-medium text-ink-secondary">尚未解鎖</h2>
+          <div className="mt-3 flex flex-col gap-3">
+            {locked.map((coupon) => {
+              const merchant = getMerchant(coupon.merchantId);
+              if (!merchant) return null;
+              return (
+                <div
+                  key={coupon.id}
+                  className="flex flex-col gap-3 rounded-2xl border border-hairline bg-plane p-5 opacity-60 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface text-ink-muted">
+                      <Ticket size={18} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-ink-secondary">{coupon.offer}</p>
+                      <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs text-ink-muted">
+                        <Storefront size={13} /> {merchant.name}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted">
+                    <LockSimple size={13} /> 投資後解鎖
+                  </span>
                 </div>
               );
             })}
