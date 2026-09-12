@@ -2,10 +2,12 @@ import { useState } from "react";
 import clsx from "clsx";
 import { Storefront, ArrowsLeftRight, Info, Clock, CheckCircle, X } from "@phosphor-icons/react";
 import { usePortfolio } from "../lib/PortfolioContext";
-import { useTransferMarket, type IntentStatus } from "../lib/TransferMarketContext";
+import { useTransferMarket, type IntentStatus, type SettlementCurrency } from "../lib/TransferMarketContext";
 import { getMerchant } from "../data/merchants";
 import { Button } from "../components/Button";
-import { formatTWD, formatPct } from "../lib/format";
+import { formatTWD, formatByCurrency, formatPct } from "../lib/format";
+
+const CURRENCIES: SettlementCurrency[] = ["TWD", "USDT", "USDC"];
 import { Link } from "react-router-dom";
 
 const statusConfig: Record<IntentStatus, { label: string; className: string }> = {
@@ -31,16 +33,24 @@ export function Transfers() {
   const [tab, setTab] = useState<Tab>("board");
   const [listingIndex, setListingIndex] = useState<number | null>(null);
   const [askPriceDraft, setAskPriceDraft] = useState(0);
+  const [currencyDraft, setCurrencyDraft] = useState<SettlementCurrency>("TWD");
 
   const startListing = (index: number, amount: number) => {
     setListingIndex(index);
     setAskPriceDraft(amount);
+    setCurrencyDraft("TWD");
   };
 
   const confirmListing = (index: number) => {
     const holding = holdings[index];
     if (!holding) return;
-    addIntent({ merchantId: holding.merchantId, amount: holding.amount, askPrice: askPriceDraft, seller: "me" });
+    addIntent({
+      merchantId: holding.merchantId,
+      amount: holding.amount,
+      askPrice: askPriceDraft,
+      currency: currencyDraft,
+      seller: "me",
+    });
     removeHoldingAt(index);
     setListingIndex(null);
   };
@@ -73,7 +83,8 @@ export function Transfers() {
         <Info size={18} weight="duotone" className="mt-0.5 shrink-0 text-accent-600" />
         <p className="text-xs leading-relaxed text-ink-muted">
           點選「我有興趣承接」後，狀態會先進入「媒合審核中」（本頁以示範動畫模擬平台審核流程），
-          審核通過才會完成過戶、納入你的投資組合。
+          審核通過才會完成過戶、納入你的投資組合。刊登轉讓意向時可選擇以新台幣或穩定幣
+          （USDT、USDC）計價結算，實際匯率以撮合當下之市場報價為準（本頁為示範用途）。
         </p>
       </div>
 
@@ -126,10 +137,16 @@ export function Transfers() {
                 </div>
                 <div className="flex items-center gap-4 sm:gap-6">
                   <div className="text-right">
-                    <p className="tabular font-mono text-sm font-medium text-ink">{formatTWD(intent.askPrice)}</p>
-                    <p className={clsx("text-xs", delta >= 0 ? "text-ink-muted" : "text-status-critical")}>
-                      {delta >= 0 ? "溢價" : "折價"} {formatPct(Math.abs(delta), 1)}
+                    <p className="tabular font-mono text-sm font-medium text-ink">
+                      {formatByCurrency(intent.askPrice, intent.currency)}
                     </p>
+                    {intent.currency === "TWD" ? (
+                      <p className={clsx("text-xs", delta >= 0 ? "text-ink-muted" : "text-status-critical")}>
+                        {delta >= 0 ? "溢價" : "折價"} {formatPct(Math.abs(delta), 1)}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-ink-muted">以 {intent.currency} 計價結算</p>
+                    )}
                   </div>
                   <StatusBadge status={intent.status} />
                   {!isMine && intent.status === "listed" && (
@@ -187,7 +204,9 @@ export function Transfers() {
                           <div className="flex flex-1 flex-col gap-1.5">
                             <label className="text-xs font-medium text-ink-secondary">希望取得價金</label>
                             <div className="flex items-center gap-2 rounded-xl border border-hairline bg-plane px-3 py-2 focus-within:border-accent-400">
-                              <span className="text-sm text-ink-muted">NT$</span>
+                              <span className="text-sm text-ink-muted">
+                                {currencyDraft === "TWD" ? "NT$" : currencyDraft}
+                              </span>
                               <input
                                 type="number"
                                 value={askPriceDraft}
@@ -195,6 +214,20 @@ export function Transfers() {
                                 className="tabular w-full bg-transparent font-mono text-sm text-ink outline-none"
                               />
                             </div>
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-xs font-medium text-ink-secondary">結算幣種</label>
+                            <select
+                              value={currencyDraft}
+                              onChange={(e) => setCurrencyDraft(e.target.value as SettlementCurrency)}
+                              className="rounded-xl border border-hairline bg-plane px-3 py-2 text-sm text-ink outline-none focus:border-accent-400"
+                            >
+                              {CURRENCIES.map((c) => (
+                                <option key={c} value={c}>
+                                  {c === "TWD" ? "新台幣 (NT$)" : c}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                           <div className="flex gap-2">
                             <Button size="md" onClick={() => confirmListing(index)}>
@@ -227,7 +260,7 @@ export function Transfers() {
                       <div>
                         <p className="text-sm font-medium text-ink">{merchant.name}</p>
                         <p className="tabular text-xs text-ink-muted">
-                          面額 {formatTWD(intent.amount)} · 希望價金 {formatTWD(intent.askPrice)}
+                          面額 {formatTWD(intent.amount)} · 希望價金 {formatByCurrency(intent.askPrice, intent.currency)}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">

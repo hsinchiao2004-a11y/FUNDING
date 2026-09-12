@@ -1,12 +1,14 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 export type IntentStatus = "listed" | "pending_review" | "completed";
+export type SettlementCurrency = "TWD" | "USDT" | "USDC";
 
 export interface TransferIntent {
   id: string;
   merchantId: string;
-  amount: number; // 面額（原始分潤權金額）
+  amount: number; // 面額（原始分潤權金額，以新台幣計）
   askPrice: number; // 轉讓方希望取得的價金
+  currency: SettlementCurrency; // 結算幣種，由轉讓方（投資人）自行選擇
   seller: "me" | string; // "me"，或示範用的其他投資人代稱
   status: IntentStatus;
   listedAt: string;
@@ -29,6 +31,7 @@ const seedIntents: TransferIntent[] = [
     merchantId: "goodgrain",
     amount: 30_000,
     askPrice: 29_000,
+    currency: "TWD",
     seller: "投資人 #3921",
     status: "listed",
     listedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
@@ -37,7 +40,8 @@ const seedIntents: TransferIntent[] = [
     id: "seed-2",
     merchantId: "noodle-house",
     amount: 50_000,
-    askPrice: 51_500,
+    askPrice: 1_650,
+    currency: "USDT",
     seller: "投資人 #1084",
     status: "listed",
     listedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
@@ -46,7 +50,8 @@ const seedIntents: TransferIntent[] = [
     id: "seed-3",
     merchantId: "atelier-soap",
     amount: 15_000,
-    askPrice: 14_200,
+    askPrice: 455,
+    currency: "USDC",
     seller: "投資人 #5577",
     status: "listed",
     listedAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
