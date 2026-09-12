@@ -87,4 +87,9 @@ export const aiSuggestions = [
     title: "電子發票尚未連接",
     body: "連接電子發票資料可加快 AI 風險評估更新速度，並提高未來申請額度的核准效率。",
   },
+  {
+    type: "promo" as const,
+    title: "AI 建議提供優惠吸引投資人消費",
+    body: "本月營收成長趨緩，AI 建議提供「到店消費享 9 折」優惠，促購 Agent 將據此生成邀請投資人到店消費的訊息。",
+  },
 ];
