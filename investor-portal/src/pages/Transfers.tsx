@@ -7,7 +7,13 @@ import { getMerchant } from "../data/merchants";
 import { Button } from "../components/Button";
 import { formatTWD, formatByCurrency, formatPct } from "../lib/format";
 
-const CURRENCIES: SettlementCurrency[] = ["TWD", "USDT", "USDC"];
+const CURRENCIES: SettlementCurrency[] = ["TWD", "USDT", "USDC", "WPT"];
+const currencyLabel: Record<SettlementCurrency, string> = {
+  TWD: "新台幣 (NT$)",
+  USDT: "USDT",
+  USDC: "USDC",
+  WPT: "旺鋪幣 (WPT)",
+};
 import { Link } from "react-router-dom";
 
 const statusConfig: Record<IntentStatus, { label: string; className: string }> = {
@@ -83,8 +89,9 @@ export function Transfers() {
         <Info size={18} weight="duotone" className="mt-0.5 shrink-0 text-accent-600" />
         <p className="text-xs leading-relaxed text-ink-muted">
           點選「我有興趣承接」後，狀態會先進入「媒合審核中」（本頁以示範動畫模擬平台審核流程），
-          審核通過才會完成過戶、納入你的投資組合。刊登轉讓意向時可選擇以新台幣或穩定幣
-          （USDT、USDC）計價結算，實際匯率以撮合當下之市場報價為準（本頁為示範用途）。
+          審核通過才會完成過戶、納入你的投資組合。刊登轉讓意向時可選擇以新台幣、穩定幣
+          （USDT、USDC），或平台原生代幣「旺鋪幣（WPT）」計價結算——以旺鋪幣結算可享較低
+          之媒合手續費。實際匯率以撮合當下之市場報價為準（本頁為示範用途）。
         </p>
       </div>
 
@@ -224,7 +231,7 @@ export function Transfers() {
                             >
                               {CURRENCIES.map((c) => (
                                 <option key={c} value={c}>
-                                  {c === "TWD" ? "新台幣 (NT$)" : c}
+                                  {currencyLabel[c]}
                                 </option>
                               ))}
                             </select>

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 export type IntentStatus = "listed" | "pending_review" | "completed";
-export type SettlementCurrency = "TWD" | "USDT" | "USDC";
+export type SettlementCurrency = "TWD" | "USDT" | "USDC" | "WPT";
 
 export interface TransferIntent {
   id: string;
@@ -55,6 +55,16 @@ const seedIntents: TransferIntent[] = [
     seller: "投資人 #5577",
     status: "listed",
     listedAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+  },
+  {
+    id: "seed-4",
+    merchantId: "bookmark-cafe",
+    amount: 20_000,
+    askPrice: 19_500,
+    currency: "WPT",
+    seller: "投資人 #6642",
+    status: "listed",
+    listedAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
   },
 ];
 
