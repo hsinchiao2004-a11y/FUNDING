@@ -1,6 +1,6 @@
 import { useState } from "react";
 import clsx from "clsx";
-import { Storefront, ArrowsLeftRight, Info, Clock, CheckCircle, X } from "@phosphor-icons/react";
+import { Storefront, ArrowsLeftRight, Info, CheckCircle, X } from "@phosphor-icons/react";
 import { usePortfolio } from "../lib/PortfolioContext";
 import { useTransferMarket, type IntentStatus, type SettlementCurrency } from "../lib/TransferMarketContext";
 import { getMerchant } from "../data/merchants";
@@ -18,7 +18,6 @@ import { Link } from "react-router-dom";
 
 const statusConfig: Record<IntentStatus, { label: string; className: string }> = {
   listed: { label: "意向掛牌中", className: "bg-accent-50 text-accent-700" },
-  pending_review: { label: "媒合審核中", className: "bg-status-warning/15 text-[#946200]" },
   completed: { label: "已完成過戶", className: "bg-status-good/10 text-[#0ca30c]" },
 };
 
@@ -67,11 +66,8 @@ export function Transfers() {
   };
 
   const expressInterest = (intentId: string, merchantId: string, amount: number) => {
-    updateStatus(intentId, "pending_review");
-    window.setTimeout(() => {
-      updateStatus(intentId, "completed");
-      addHolding(merchantId, amount);
-    }, 1500);
+    updateStatus(intentId, "completed");
+    addHolding(merchantId, amount);
   };
 
   const boardIntents = intents.slice().sort((a, b) => (a.listedAt < b.listedAt ? 1 : -1));
@@ -81,17 +77,15 @@ export function Transfers() {
     <div className="mx-auto max-w-4xl px-6 py-12">
       <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">轉讓看板</h1>
       <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-secondary">
-        為提升持有部位的流動性，投資人可張貼轉讓意向，由平台媒合審核後完成過戶——
-        並非即時撮合、隨時可交易的公開次級市場。
+        為提升持有部位的流動性，投資人可張貼轉讓意向，其他投資人點選承接後即時完成過戶。
       </p>
 
       <div className="mt-4 flex items-start gap-3 rounded-2xl border border-hairline bg-surface p-4">
         <Info size={18} weight="duotone" className="mt-0.5 shrink-0 text-accent-600" />
         <p className="text-xs leading-relaxed text-ink-muted">
-          點選「我有興趣承接」後，狀態會先進入「媒合審核中」（本頁以示範動畫模擬平台審核流程），
-          審核通過才會完成過戶、納入你的投資組合。刊登轉讓意向時可選擇以新台幣、穩定幣
-          （USDT、USDC），或平台原生代幣「旺鋪幣（WPT）」計價結算——以旺鋪幣結算可享較低
-          之媒合手續費。實際匯率以撮合當下之市場報價為準（本頁為示範用途）。
+          點選「我有興趣承接」後即時完成過戶、納入你的投資組合，不需等待審核。刊登轉讓意向時
+          可選擇以新台幣、穩定幣（USDT、USDC），或平台原生代幣「旺鋪幣（WPT）」計價結算——
+          以旺鋪幣結算可享較低之媒合手續費。實際匯率以撮合當下之市場報價為準（本頁為示範用途）。
         </p>
       </div>
 
@@ -160,9 +154,6 @@ export function Transfers() {
                     <Button size="md" onClick={() => expressInterest(intent.id, intent.merchantId, intent.amount)}>
                       我有興趣承接
                     </Button>
-                  )}
-                  {intent.status === "pending_review" && (
-                    <Clock size={16} className="animate-spin text-ink-muted" />
                   )}
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-export type IntentStatus = "listed" | "pending_review" | "completed";
+export type IntentStatus = "listed" | "completed";
 export type SettlementCurrency = "TWD" | "USDT" | "USDC" | "WPT";
 
 export interface TransferIntent {
