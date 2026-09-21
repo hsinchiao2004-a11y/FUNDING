@@ -1,9 +1,10 @@
 import { useState } from "react";
 import clsx from "clsx";
-import { Storefront, ArrowsLeftRight, Info, CheckCircle, X } from "@phosphor-icons/react";
+import { Storefront, ArrowsLeftRight, Info, CheckCircle, Robot, X } from "@phosphor-icons/react";
 import { usePortfolio } from "../lib/PortfolioContext";
 import { useTransferMarket, type IntentStatus, type SettlementCurrency } from "../lib/TransferMarketContext";
-import { getMerchant } from "../data/merchants";
+import { getMerchant, type RiskTier } from "../data/merchants";
+import { getExitMatchSuggestion, suggestedExitPrice } from "../lib/agentMatch";
 import { Button } from "../components/Button";
 import { formatTWD, formatByCurrency, formatPct } from "../lib/format";
 
@@ -40,9 +41,11 @@ export function Transfers() {
   const [askPriceDraft, setAskPriceDraft] = useState(0);
   const [currencyDraft, setCurrencyDraft] = useState<SettlementCurrency>("TWD");
 
-  const startListing = (index: number, amount: number) => {
+  // 退場媒合 Agent 主動建議一個容易成交的意願價格，而不是讓投資人自己猜一個
+  // 數字丟到看板上——掛牌表單一打開就先帶入 Agent 的建議值。
+  const startListing = (index: number, amount: number, tier: RiskTier) => {
     setListingIndex(index);
-    setAskPriceDraft(amount);
+    setAskPriceDraft(suggestedExitPrice(amount, tier));
     setCurrencyDraft("TWD");
   };
 
@@ -77,7 +80,8 @@ export function Transfers() {
     <div className="mx-auto max-w-4xl px-6 py-12">
       <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">轉讓看板</h1>
       <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-secondary">
-        為提升持有部位的流動性，投資人可張貼轉讓意向，其他投資人點選承接後即時完成過戶。
+        為提升持有部位的流動性，退場媒合 Agent 持續在背景為你尋找潛在承接方並建議價格，
+        不需要自己把意向丟到看板上被動等待——確定刊登後，其他投資人點選承接即時完成過戶。
       </p>
 
       <div className="mt-4 flex items-start gap-3 rounded-2xl border border-hairline bg-surface p-4">
@@ -85,7 +89,8 @@ export function Transfers() {
         <p className="text-xs leading-relaxed text-ink-muted">
           點選「我要承接」後即時完成過戶、納入你的投資組合，不需等待審核。刊登轉讓意向時
           可選擇以新台幣、穩定幣（USDT、USDC），或平台原生代幣「挺店幣（WPT）」計價結算——
-          以挺店幣結算可享較低之媒合手續費。實際匯率以撮合當下之市場報價為準（本頁為示範用途）。
+          以挺店幣結算可享較低之媒合手續費。意願價格預設帶入 Agent 建議值，實際匯率以撮合
+          當下之市場報價為準（本頁為示範用途）。
         </p>
       </div>
 
@@ -179,6 +184,8 @@ export function Transfers() {
                   const merchant = getMerchant(holding.merchantId);
                   if (!merchant) return null;
                   const isListing = listingIndex === index;
+                  const suggestion = getExitMatchSuggestion(merchant.riskTier);
+                  const suggestedPrice = suggestedExitPrice(holding.amount, merchant.riskTier);
                   return (
                     <div key={index} className="rounded-2xl border border-hairline bg-surface p-5">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -189,16 +196,38 @@ export function Transfers() {
                           <div>
                             <p className="font-medium text-ink">{merchant.name}</p>
                             <p className="tabular text-xs text-ink-muted">面額 {formatTWD(holding.amount)}</p>
+                            <p className="mt-1 inline-flex items-center gap-1 text-xs text-accent-700">
+                              <Robot size={13} weight="duotone" />
+                              Agent 已找到 {suggestion.matches} 位潛在承接方
+                            </p>
                           </div>
                         </div>
                         {!isListing && (
-                          <Button variant="ghost" size="md" onClick={() => startListing(index, holding.amount)}>
+                          <Button variant="ghost" size="md" onClick={() => startListing(index, holding.amount, merchant.riskTier)}>
                             刊登轉讓意向
                           </Button>
                         )}
                       </div>
                       {isListing && (
-                        <div className="mt-4 flex flex-col gap-3 border-t border-hairline pt-4 sm:flex-row sm:items-end sm:gap-4">
+                        <div className="mt-4 flex flex-col gap-3 border-t border-hairline pt-4">
+                          <div className="flex items-start gap-2.5 rounded-xl border border-accent-200 bg-accent-50 px-3.5 py-2.5">
+                            <Robot size={16} weight="duotone" className="mt-0.5 shrink-0 text-accent-700" />
+                            <p className="text-xs leading-relaxed text-accent-800">
+                              Agent 建議意願價格 <span className="tabular font-mono font-medium">{formatTWD(suggestedPrice)}</span>
+                              （較面額折讓 {suggestion.discountPct}%），依目前 {suggestion.matches} 位潛在承接方之市場行情估算，
+                              可加快媒合速度。
+                              {askPriceDraft !== suggestedPrice && (
+                                <button
+                                  type="button"
+                                  onClick={() => setAskPriceDraft(suggestedPrice)}
+                                  className="ml-1 font-medium underline underline-offset-2 hover:text-accent-900"
+                                >
+                                  使用建議價格
+                                </button>
+                              )}
+                            </p>
+                          </div>
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
                           <div className="flex flex-1 flex-col gap-1.5">
                             <label className="text-xs font-medium text-ink-secondary">希望取得價金</label>
                             <div className="flex items-center gap-2 rounded-xl border border-hairline bg-plane px-3 py-2 focus-within:border-accent-400">
@@ -234,6 +263,7 @@ export function Transfers() {
                             <Button variant="ghost" size="md" onClick={() => setListingIndex(null)}>
                               <X size={15} />
                             </Button>
+                          </div>
                           </div>
                         </div>
                       )}

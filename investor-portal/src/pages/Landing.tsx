@@ -8,6 +8,8 @@ import {
   Bank,
   Robot,
   Receipt,
+  Handshake,
+  Megaphone,
 } from "@phosphor-icons/react";
 import { merchants } from "../data/merchants";
 import { HeroPreview } from "../components/HeroPreview";
@@ -38,6 +40,24 @@ const trustPoints = [
   { icon: Robot, label: "AI 持續監控營收異常" },
   { icon: Receipt, label: "完善的商家審核機制" },
   { icon: ShieldCheck, label: "分潤結算全程可追蹤" },
+];
+
+const agentCards = [
+  {
+    icon: Handshake,
+    title: "退場媒合 Agent",
+    body: "主動幫你的每一筆持股尋找潛在承接方並建議價格，取代要投資人自己刊登、被動等人瀏覽的傳統次級市場。",
+  },
+  {
+    icon: MagnifyingGlass,
+    title: "投資分身 Agent",
+    body: "持續掃描你持有的每一筆分潤權與商家風險狀態，主動給出建議，而不是核准當下算一次分數就結束。",
+  },
+  {
+    icon: Megaphone,
+    title: "消費循環 Agent",
+    body: "偵測到營收波動或你已一段時間沒到店，主動推播專屬優惠，把投資關係導回實際消費，而不是被動等循環自然發生。",
+  },
 ];
 
 export function Landing() {
@@ -142,7 +162,7 @@ export function Landing() {
         </div>
       </section>
 
-      {/* AI Agent — 2-cell card grid */}
+      {/* AI Agent — 3-cell card grid */}
       <section className="mx-auto max-w-7xl px-6 py-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-lg">
@@ -150,25 +170,28 @@ export function Landing() {
               背後有 AI Agent 持續運作
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
-              不只是跑一次評分，而是持續監控、主動給建議。
+              不只是跑一次評分，而是持續監控、主動給建議、主動觸發。
             </p>
           </div>
           <Link to="/agents" className="text-sm font-medium text-accent-700 hover:text-accent-800">
             查看 AI Agent 詳情 →
           </Link>
         </div>
-        <div className="mx-auto mt-8 max-w-3xl">
-          <div className="flex flex-col gap-4 rounded-2xl border border-hairline bg-surface p-6 sm:flex-row sm:items-start">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
-              <MagnifyingGlass size={22} weight="duotone" />
+        <div className="mt-8 grid gap-4 lg:grid-cols-3">
+          {agentCards.map((agent) => (
+            <div
+              key={agent.title}
+              className="flex flex-col gap-4 rounded-2xl border border-hairline bg-surface p-6"
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
+                <agent.icon size={22} weight="duotone" />
+              </div>
+              <div>
+                <h3 className="font-medium text-ink">{agent.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink-secondary">{agent.body}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-medium text-ink">風險監測管理 Agent</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-secondary">
-                持續掃描你持有的每一筆分潤權與商家風險狀態，主動給出建議，而不是等你自己發現異常。
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
