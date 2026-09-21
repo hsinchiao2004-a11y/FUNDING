@@ -10,7 +10,7 @@ export function Footer() {
               <rect x="14" y="12" width="4" height="14" rx="1.5" fill="#ecfdf5" />
               <rect x="21" y="6" width="4" height="20" rx="1.5" fill="#ecfdf5" />
             </svg>
-            <span className="text-sm font-medium text-ink">旺舖</span>
+            <span className="text-sm font-medium text-ink">挺店</span>
           </div>
           <div className="max-w-xl text-xs leading-relaxed text-ink-muted">
             <p className="mb-2 font-medium text-ink-secondary">風險與合規揭露</p>
@@ -19,7 +19,7 @@ export function Footer() {
             </p>
           </div>
         </div>
-        <p className="mt-8 text-xs text-ink-muted">© {new Date().getFullYear()} 旺舖．本頁面僅供產品構想展示。</p>
+        <p className="mt-8 text-xs text-ink-muted">© {new Date().getFullYear()} 挺店．本頁面僅供產品構想展示。</p>
       </div>
     </footer>
   );

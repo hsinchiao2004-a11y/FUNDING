@@ -41,7 +41,7 @@ export function Gate() {
               <rect x="14" y="12" width="4" height="14" rx="1.5" fill="#ecfdf5" />
               <rect x="21" y="6" width="4" height="20" rx="1.5" fill="#ecfdf5" />
             </svg>
-            <span className="text-2xl font-medium tracking-tight text-ink">旺舖</span>
+            <span className="text-2xl font-medium tracking-tight text-ink">挺店</span>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -97,7 +97,7 @@ export function Gate() {
                 <Coins size={18} weight="duotone" />
               </div>
               <div>
-                <p className="text-sm font-medium text-ink">已持有旺鋪幣，想直接兌現？</p>
+                <p className="text-sm font-medium text-ink">已持有挺店幣，想直接兌現？</p>
                 <p className="mt-0.5 text-xs text-ink-muted">
                   平台幣兌現轉讓——不綁定特定商家，可登記兌換為新台幣或穩定幣
                 </p>

@@ -116,7 +116,7 @@ export function Landing() {
               不只是投資，更是一種消費關係
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
-              傳統投資是「投資後等待收益」；旺舖希望你同時是投資人，也是最忠實的消費者。
+              傳統投資是「投資後等待收益」；挺店希望你同時是投資人，也是最忠實的消費者。
             </p>
           </div>
           <div className="mt-10">

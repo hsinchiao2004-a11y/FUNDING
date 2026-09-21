@@ -12,7 +12,7 @@ const currencyLabel: Record<SettlementCurrency, string> = {
   TWD: "新台幣 (NT$)",
   USDT: "USDT",
   USDC: "USDC",
-  WPT: "旺鋪幣 (WPT)",
+  WPT: "挺店幣 (WPT)",
 };
 import { Link } from "react-router-dom";
 
@@ -84,8 +84,8 @@ export function Transfers() {
         <Info size={18} weight="duotone" className="mt-0.5 shrink-0 text-accent-600" />
         <p className="text-xs leading-relaxed text-ink-muted">
           點選「我要承接」後即時完成過戶、納入你的投資組合，不需等待審核。刊登轉讓意向時
-          可選擇以新台幣、穩定幣（USDT、USDC），或平台原生代幣「旺鋪幣（WPT）」計價結算——
-          以旺鋪幣結算可享較低之媒合手續費。實際匯率以撮合當下之市場報價為準（本頁為示範用途）。
+          可選擇以新台幣、穩定幣（USDT、USDC），或平台原生代幣「挺店幣（WPT）」計價結算——
+          以挺店幣結算可享較低之媒合手續費。實際匯率以撮合當下之市場報價為準（本頁為示範用途）。
         </p>
       </div>
 

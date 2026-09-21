@@ -21,7 +21,7 @@ export function Nav() {
             <rect x="14" y="12" width="4" height="14" rx="1.5" fill="#ecfdf5" />
             <rect x="21" y="6" width="4" height="20" rx="1.5" fill="#ecfdf5" />
           </svg>
-          <span className="text-[15px] font-medium tracking-tight text-ink">旺舖商家後台</span>
+          <span className="text-[15px] font-medium tracking-tight text-ink">挺店商家後台</span>
         </div>
 
         <nav className="hidden items-center gap-1 lg:flex">

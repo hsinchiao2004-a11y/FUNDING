@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-// 平台幣（旺鋪幣／WPT）兌現轉讓——標的僅為平台幣本身，不綁定任何特定商家的
+// 平台幣（挺店幣／WPT）兌現轉讓——標的僅為平台幣本身，不綁定任何特定商家的
 // 分潤請求權，性質上近似於平台幣與法幣／穩定幣之間的兌換窗口。與 TransferMarketContext
 // （轉讓「商家分潤權」，可選擇以 WPT 計價結算）是兩個獨立的機制。
 
