@@ -1,10 +1,15 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import clsx from "clsx";
 import { ArrowsLeftRight, Coins, Ticket } from "@phosphor-icons/react";
 import { buttonClasses } from "./Button";
 import { NotificationBell } from "./NotificationBell";
 
 export function Nav() {
+  // 平台幣兌現轉讓的標的僅為平台幣本身，跟商家分潤權／投資無關，
+  // 所以這頁不顯示轉讓看板、優惠券、開始投資、我的投資這幾個投資相關的頁籤。
+  const { pathname } = useLocation();
+  const isTokenExchange = pathname === "/token-exchange";
+
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-plane/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-1 px-2 sm:gap-3 sm:px-6">
@@ -19,19 +24,21 @@ export function Nav() {
         </NavLink>
 
         <div className="flex items-center gap-px sm:gap-2">
-          <NavLink
-            to="/transfers"
-            aria-label="轉讓看板"
-            className={({ isActive }) =>
-              clsx(
-                "flex items-center gap-1.5 whitespace-nowrap rounded-full px-1.5 py-2 text-sm font-medium transition-colors sm:px-4",
-                isActive ? "bg-accent-50 text-accent-700" : "text-ink-secondary hover:text-ink",
-              )
-            }
-          >
-            <ArrowsLeftRight size={16} />
-            <span className="hidden sm:inline">轉讓看板</span>
-          </NavLink>
+          {!isTokenExchange && (
+            <NavLink
+              to="/transfers"
+              aria-label="轉讓看板"
+              className={({ isActive }) =>
+                clsx(
+                  "flex items-center gap-1.5 whitespace-nowrap rounded-full px-1.5 py-2 text-sm font-medium transition-colors sm:px-4",
+                  isActive ? "bg-accent-50 text-accent-700" : "text-ink-secondary hover:text-ink",
+                )
+              }
+            >
+              <ArrowsLeftRight size={16} />
+              <span className="hidden sm:inline">轉讓看板</span>
+            </NavLink>
+          )}
           <NavLink
             to="/token-exchange"
             aria-label="平台幣兌現"
@@ -45,43 +52,47 @@ export function Nav() {
             <Coins size={16} />
             <span className="hidden sm:inline">平台幣兌現</span>
           </NavLink>
-          <NavLink
-            to="/coupons"
-            aria-label="優惠券"
-            className={({ isActive }) =>
-              clsx(
-                "flex items-center gap-1.5 whitespace-nowrap rounded-full px-1.5 py-2 text-sm font-medium transition-colors sm:px-4",
-                isActive ? "bg-accent-50 text-accent-700" : "text-ink-secondary hover:text-ink",
-              )
-            }
-          >
-            <Ticket size={16} />
-            <span className="hidden sm:inline">優惠券</span>
-          </NavLink>
-          <NavLink
-            to="/marketplace"
-            className={({ isActive }) =>
-              clsx(
-                buttonClasses("primary", "md"),
-                "!px-2 sm:!px-5",
-                isActive && "ring-2 ring-accent-800 ring-offset-2 ring-offset-plane",
-              )
-            }
-          >
-            開始投資
-          </NavLink>
-          <NavLink
-            to="/portfolio"
-            className={({ isActive }) =>
-              clsx(
-                buttonClasses("primary", "md"),
-                "!px-2 sm:!px-5",
-                isActive && "ring-2 ring-accent-800 ring-offset-2 ring-offset-plane",
-              )
-            }
-          >
-            我的投資
-          </NavLink>
+          {!isTokenExchange && (
+            <>
+              <NavLink
+                to="/coupons"
+                aria-label="優惠券"
+                className={({ isActive }) =>
+                  clsx(
+                    "flex items-center gap-1.5 whitespace-nowrap rounded-full px-1.5 py-2 text-sm font-medium transition-colors sm:px-4",
+                    isActive ? "bg-accent-50 text-accent-700" : "text-ink-secondary hover:text-ink",
+                  )
+                }
+              >
+                <Ticket size={16} />
+                <span className="hidden sm:inline">優惠券</span>
+              </NavLink>
+              <NavLink
+                to="/marketplace"
+                className={({ isActive }) =>
+                  clsx(
+                    buttonClasses("primary", "md"),
+                    "!px-2 sm:!px-5",
+                    isActive && "ring-2 ring-accent-800 ring-offset-2 ring-offset-plane",
+                  )
+                }
+              >
+                開始投資
+              </NavLink>
+              <NavLink
+                to="/portfolio"
+                className={({ isActive }) =>
+                  clsx(
+                    buttonClasses("primary", "md"),
+                    "!px-2 sm:!px-5",
+                    isActive && "ring-2 ring-accent-800 ring-offset-2 ring-offset-plane",
+                  )
+                }
+              >
+                我的投資
+              </NavLink>
+            </>
+          )}
           <NotificationBell />
         </div>
       </div>
