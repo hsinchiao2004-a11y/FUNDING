@@ -7,6 +7,7 @@ import { MerchantDetail } from "./pages/MerchantDetail";
 import { Portfolio } from "./pages/Portfolio";
 import { Transfers } from "./pages/Transfers";
 import { Agents } from "./pages/Agents";
+import { AgentMatch } from "./pages/AgentMatch";
 import { Coupons } from "./pages/Coupons";
 import { TokenExchange } from "./pages/TokenExchange";
 import { PortfolioProvider } from "./lib/PortfolioContext";
@@ -33,6 +34,7 @@ export default function App() {
                     <Route path="/transfers" element={<Transfers />} />
                     <Route path="/token-exchange" element={<TokenExchange />} />
                     <Route path="/agents" element={<Agents />} />
+                    <Route path="/agent-match" element={<AgentMatch />} />
                     <Route path="/coupons" element={<Coupons />} />
                   </Route>
                 </Routes>

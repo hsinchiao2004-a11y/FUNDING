@@ -183,9 +183,18 @@ export function Agents() {
           <h2 className="text-lg font-medium text-ink">投資分身 Agent</h2>
         </div>
         <p className="mt-1 max-w-xl text-sm leading-relaxed text-ink-secondary">
-          持續掃描你持有的每一筆分潤權與商家風險狀態，主動給出建議，而不是等你自己發現異常。
-          它不是核准當下算一次分數就結束，而是每天都在替你的投資組合值班。
+          從一開始的商家推薦到之後的持續監控，都是同一個 Agent 在管理，而不是核准當下算一次
+          分數就結束——先透過風險、獲利、商家性質偏好調查幫你篩出第一批推薦商家，之後每天
+          都在替你的投資組合值班、主動給出建議。
         </p>
+
+        <Link
+          to="/agent-match"
+          className="group mt-4 flex items-center justify-between gap-4 rounded-xl border border-hairline bg-plane px-4 py-3 transition-colors hover:border-accent-300"
+        >
+          <span className="text-sm font-medium text-ink">還沒設定偏好？先做一次 Agent 客製化推薦</span>
+          <span className="shrink-0 text-sm font-medium text-accent-700 group-hover:text-accent-800">前往 →</span>
+        </Link>
 
         <div className="mt-4 flex items-center gap-2 rounded-xl border border-hairline bg-plane px-4 py-2.5 text-xs text-ink-muted">
           <CalendarCheck size={14} className="shrink-0 text-accent-600" />

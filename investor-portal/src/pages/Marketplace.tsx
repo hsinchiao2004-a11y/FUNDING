@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import clsx from "clsx";
+import { Robot, ArrowRight } from "@phosphor-icons/react";
 import { merchants } from "../data/merchants";
 import { MerchantCard } from "../components/MerchantCard";
 
@@ -44,6 +46,25 @@ export function Marketplace() {
           每一家商家都提供數位營收數據與 AI 風險評估分數，協助你判斷投資決策。
         </p>
       </div>
+
+      <Link
+        to="/agent-match"
+        className="group mt-5 flex items-center justify-between gap-4 rounded-2xl border border-hairline bg-plane px-5 py-4 transition-colors hover:border-accent-300"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
+            <Robot size={18} weight="duotone" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-ink">還沒決定投資哪家？</p>
+            <p className="mt-0.5 text-xs text-ink-muted">回答風險、獲利、商家性質偏好，讓 Agent 主動幫你推薦</p>
+          </div>
+        </div>
+        <ArrowRight
+          size={16}
+          className="shrink-0 text-ink-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent-600"
+        />
+      </Link>
 
       <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-2">
