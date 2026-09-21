@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { TrendUp, Storefront, FileText, ArrowRight } from "@phosphor-icons/react";
+import { TrendUp, Storefront, FileText, Coins, ArrowRight } from "@phosphor-icons/react";
 import { Footer } from "../components/Footer";
 
 const MERCHANT_PORTAL_URL = "https://funding-fefg.vercel.app/";
@@ -87,6 +87,27 @@ export function Gate() {
               );
             })}
           </div>
+
+          <Link
+            to="/token-exchange"
+            className="group flex w-full items-center justify-between gap-4 rounded-2xl border border-dashed border-hairline px-5 py-4 text-left transition-colors hover:border-accent-300"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-50 text-accent-700">
+                <Coins size={18} weight="duotone" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-ink">已持有旺鋪幣，想直接兌現？</p>
+                <p className="mt-0.5 text-xs text-ink-muted">
+                  平台幣兌現轉讓——不綁定特定商家，可登記兌換為新台幣或穩定幣
+                </p>
+              </div>
+            </div>
+            <ArrowRight
+              size={16}
+              className="shrink-0 text-ink-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent-600"
+            />
+          </Link>
         </div>
       </main>
       <Footer />

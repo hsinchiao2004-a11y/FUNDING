@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import clsx from "clsx";
-import { ArrowsLeftRight, Ticket } from "@phosphor-icons/react";
+import { ArrowsLeftRight, Coins, Ticket } from "@phosphor-icons/react";
 import { buttonClasses } from "./Button";
 import { NotificationBell } from "./NotificationBell";
 
@@ -31,6 +31,19 @@ export function Nav() {
           >
             <ArrowsLeftRight size={16} />
             <span className="hidden sm:inline">轉讓看板</span>
+          </NavLink>
+          <NavLink
+            to="/token-exchange"
+            aria-label="平台幣兌現"
+            className={({ isActive }) =>
+              clsx(
+                "flex items-center gap-1.5 whitespace-nowrap rounded-full px-1.5 py-2 text-sm font-medium transition-colors sm:px-4",
+                isActive ? "bg-accent-50 text-accent-700" : "text-ink-secondary hover:text-ink",
+              )
+            }
+          >
+            <Coins size={16} />
+            <span className="hidden sm:inline">平台幣兌現</span>
           </NavLink>
           <NavLink
             to="/coupons"

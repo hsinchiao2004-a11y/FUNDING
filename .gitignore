@@ -1,1 +1,5 @@
 .DS_Store
+
+# Stray local exports that sometimes land in this folder — not part of the repo
+Claude outputs/
+*.pdf
