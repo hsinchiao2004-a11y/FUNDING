@@ -279,11 +279,14 @@ export function MerchantDetail() {
                   />
                   <p className="text-xs text-ink-muted">最低投資金額 {formatWpt(wptMin)}（對價 {formatTWD(min)}）</p>
 
-                  <div className="mt-1 flex items-center justify-between gap-2 rounded-xl border border-hairline bg-plane px-3 py-2">
-                    <span className="text-xs text-ink-secondary">對價（新台幣）</span>
-                    <span className="tabular font-mono text-xs font-medium text-ink">
-                      {formatTWD(amount)}（1 WPT = {formatTWD(WPT_RATE_TWD)}）
-                    </span>
+                  <div className="mt-1 rounded-xl border border-hairline bg-plane px-3 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-ink-secondary">對價（新台幣）</span>
+                      <span className="tabular font-mono text-xs font-medium text-ink">{formatTWD(amount)}</span>
+                    </div>
+                    <p className="mt-0.5 text-right text-[11px] text-ink-muted">
+                      1 WPT = {formatTWD(WPT_RATE_TWD)}
+                    </p>
                   </div>
                   <p className="text-xs text-ink-muted">
                     我的平台幣餘額 {formatWpt(wptBalance)}
