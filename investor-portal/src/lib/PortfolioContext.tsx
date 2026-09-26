@@ -42,7 +42,9 @@ const WITHDRAWN_STORAGE_KEY = "wangpu.cash-withdrawn.v1";
 const REINVESTED_STORAGE_KEY = "wangpu.reinvested.v1";
 
 // 示範用：投資成立後，模擬一筆已入帳的分潤（金額的 2%–5%），讓分潤運用功能一開始就有東西可互動。
-const seedAccrual = (amount: number) => Math.round((amount * (0.02 + Math.random() * 0.03)) / 100) * 100;
+// 下限 100 元，避免最低投資金額（NT$1,000）算出來的分潤四捨五入變成 0，導致
+// 提領現金／滾入再投資／折抵消費金這幾個操作完全不會出現。
+const seedAccrual = (amount: number) => Math.max(100, Math.round((amount * (0.02 + Math.random() * 0.03)) / 100) * 100);
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [holdings, setHoldings] = useState<Holding[]>(() => {
