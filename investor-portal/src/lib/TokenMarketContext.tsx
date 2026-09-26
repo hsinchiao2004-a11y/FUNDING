@@ -1,8 +1,13 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { twdToWpt } from "./format";
 
 // 平台幣（挺店幣／WPT）兌現轉讓——標的僅為平台幣本身，不綁定任何特定商家的
 // 分潤請求權，性質上近似於平台幣與法幣／穩定幣之間的兌換窗口。與 TransferMarketContext
 // （轉讓「商家分潤權」，可選擇以 WPT 計價結算）是兩個獨立的機制。
+//
+// 買入平台幣（新台幣 → WPT）採平台固定掛牌匯率 1 WPT = NT$1,000，如同向平台的
+// 兌換窗口買入；賣出／兌現（WPT → 新台幣或穩定幣）則透過下方的一對一掛牌機制，
+// 由賣方自行決定意願價格，兩者性質不同。
 
 export type CashCurrency = "TWD" | "USDT" | "USDC";
 export type TokenListingStatus = "listed" | "completed";
@@ -23,6 +28,8 @@ interface TokenMarketState {
   listForCash: (wptAmount: number, askPrice: number, currency: CashCurrency) => void;
   cancelListing: (id: string) => void;
   takeListing: (id: string) => void;
+  buyWithTwd: (twdAmount: number) => void;
+  spendWpt: (wptAmount: number) => boolean;
 }
 
 const TokenMarketContext = createContext<TokenMarketState | null>(null);
@@ -116,9 +123,25 @@ export function TokenMarketProvider({ children }: { children: ReactNode }) {
     setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status: "completed" } : l)));
   };
 
+  // 買入平台幣：以平台固定掛牌匯率（1 WPT = NT$1,000）用新台幣兌換 WPT，
+  // 這是投資人參與商家分潤前的第一步——投資一律以 WPT 轉入商家專屬合約，
+  // 而非直接以新台幣投資。
+  const buyWithTwd = (twdAmount: number) => {
+    if (twdAmount <= 0) return;
+    setWptBalance((b) => b + twdToWpt(twdAmount));
+  };
+
+  // 投資特定商家時，從餘額中扣抵欲轉入商家專屬合約的 WPT 數量；餘額不足則
+  // 拒絕扣款，由呼叫端引導投資人先兌換更多平台幣。
+  const spendWpt = (wptAmount: number): boolean => {
+    if (wptAmount <= 0 || wptAmount > wptBalance) return false;
+    setWptBalance((b) => b - wptAmount);
+    return true;
+  };
+
   return (
     <TokenMarketContext.Provider
-      value={{ wptBalance, listings, listForCash, cancelListing, takeListing }}
+      value={{ wptBalance, listings, listForCash, cancelListing, takeListing, buyWithTwd, spendWpt }}
     >
       {children}
     </TokenMarketContext.Provider>

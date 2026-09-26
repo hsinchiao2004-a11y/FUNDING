@@ -9,6 +9,7 @@ import {
   Lock,
   Sparkle,
   Flag,
+  Coins,
 } from "@phosphor-icons/react";
 import { getMerchant } from "../data/merchants";
 import { RevenueChart } from "../components/RevenueChart";
@@ -16,19 +17,28 @@ import { StatTile } from "../components/StatTile";
 import { ProgressBar } from "../components/ProgressBar";
 import { RiskBadge } from "../components/Badge";
 import { Button } from "../components/Button";
-import { formatCompactTWD, formatTWD, formatPct, clamp } from "../lib/format";
+import { formatCompactTWD, formatTWD, formatPct, formatWpt, twdToWpt, wptToTwd, WPT_RATE_TWD, clamp } from "../lib/format";
 import { usePortfolio } from "../lib/PortfolioContext";
+import { useTokenMarket } from "../lib/TokenMarketContext";
 
 export function MerchantDetail() {
   const { id } = useParams();
   const merchant = id ? getMerchant(id) : undefined;
   const { invest } = usePortfolio();
+  const { wptBalance, spendWpt } = useTokenMarket();
 
-  const [amount, setAmount] = useState(5000);
-  const [success, setSuccess] = useState(false);
-
+  // 投資一律以平台幣（WPT）轉入商家專屬合約，因此投資金額的主要輸入單位是
+  // WPT；新台幣僅作為換算後的對價顯示，方便理解實際花費。
   const min = 1000;
   const max = 200_000;
+  const wptMin = twdToWpt(min);
+  const wptMax = twdToWpt(max);
+
+  const [wptAmount, setWptAmount] = useState(twdToWpt(5000));
+  const [success, setSuccess] = useState(false);
+
+  const amount = wptToTwd(wptAmount);
+  const insufficientWpt = wptAmount > wptBalance;
 
   if (!merchant) return <Navigate to="/marketplace" replace />;
 
@@ -37,6 +47,7 @@ export function MerchantDetail() {
   const remaining = Math.max(financing.amount - financing.raised, 0);
 
   const handleInvest = () => {
+    if (!spendWpt(wptAmount)) return;
     invest(merchant.id, amount);
     setSuccess(true);
   };
@@ -85,7 +96,11 @@ export function MerchantDetail() {
           <section>
             <h2 className="text-lg font-medium text-ink">RBF 融資條件</h2>
             <div className="mt-5 grid grid-cols-2 gap-6 rounded-2xl border border-hairline bg-surface p-6 sm:grid-cols-4">
-              <StatTile label="融資金額" value={formatCompactTWD(financing.amount)} />
+              <StatTile
+                label="融資金額"
+                value={formatWpt(twdToWpt(financing.amount))}
+                hint={`對價 ${formatCompactTWD(financing.amount)}`}
+              />
               <StatTile label="每月營收分潤" value={formatPct(financing.monthlyShareRate * 100)} />
               <StatTile label="最低月還款" value={formatCompactTWD(financing.minMonthlyRepay)} />
               <StatTile
@@ -135,7 +150,7 @@ export function MerchantDetail() {
                       <p>{tier.label}</p>
                       {!unlocked && (
                         <p className="mt-0.5 text-xs text-ink-muted">
-                          投資滿 {formatTWD(tier.minAmount)} 解鎖
+                          投資滿 {formatWpt(twdToWpt(tier.minAmount))}（對價 {formatTWD(tier.minAmount)}）解鎖
                         </p>
                       )}
                     </div>
@@ -191,7 +206,7 @@ export function MerchantDetail() {
                 </div>
                 <p className="font-medium text-ink">投資已送出（示範）</p>
                 <p className="text-sm text-ink-secondary">
-                  你投資了 {formatTWD(amount)} 到 {merchant.name}。
+                  你以 {formatWpt(wptAmount)}（對價 {formatTWD(amount)}）投資了 {merchant.name}。
                 </p>
                 <Link
                   to="/portfolio"
@@ -204,13 +219,14 @@ export function MerchantDetail() {
               <>
                 <div className="flex items-baseline justify-between text-sm">
                   <span className="tabular font-mono text-ink">
-                    已募 {formatCompactTWD(financing.raised)}
+                    已募 {formatWpt(twdToWpt(financing.raised))}
                   </span>
                   <span className="text-ink-muted">{formatPct(pctFunded, 0)}</span>
                 </div>
+                <p className="text-xs text-ink-muted">對價 {formatCompactTWD(financing.raised)}</p>
                 <ProgressBar value={financing.raised} max={financing.amount} className="mt-2" />
                 <p className="mt-2 text-xs text-ink-muted">
-                  尚需 {formatCompactTWD(remaining)} · {financing.investors} 位投資人已參與
+                  尚需 {formatWpt(twdToWpt(remaining))}（對價 {formatCompactTWD(remaining)}） · {financing.investors} 位投資人已參與
                 </p>
 
                 <div className="mt-6 grid grid-cols-2 gap-4">
@@ -226,36 +242,55 @@ export function MerchantDetail() {
 
                 <div className="mt-6 flex flex-col gap-2">
                   <label htmlFor="amount" className="text-sm font-medium text-ink">
-                    投資金額
+                    投資金額（平台幣 WPT）
                   </label>
                   <div className="flex items-center gap-2 rounded-xl border border-hairline bg-plane px-3 py-2 focus-within:border-accent-400">
-                    <span className="text-sm text-ink-muted">NT$</span>
+                    <Coins size={16} weight="duotone" className="shrink-0 text-accent-600" />
                     <input
                       id="amount"
                       type="number"
-                      min={min}
-                      max={max}
-                      step={1000}
-                      value={amount}
+                      min={wptMin}
+                      max={wptMax}
+                      step={1}
+                      value={wptAmount}
                       onChange={(e) =>
-                        setAmount(clamp(Number(e.target.value) || 0, min, max))
+                        setWptAmount(clamp(Number(e.target.value) || 0, wptMin, wptMax))
                       }
                       className="tabular w-full bg-transparent font-mono text-sm text-ink outline-none"
                     />
+                    <span className="shrink-0 text-sm text-ink-muted">WPT</span>
                   </div>
                   <input
                     type="range"
-                    min={min}
-                    max={50_000}
-                    step={1000}
-                    value={Math.min(amount, 50_000)}
-                    onChange={(e) => setAmount(Number(e.target.value))}
+                    min={wptMin}
+                    max={50}
+                    step={1}
+                    value={Math.min(wptAmount, 50)}
+                    onChange={(e) => setWptAmount(Number(e.target.value))}
                     className="mt-1 accent-accent-600"
                   />
-                  <p className="text-xs text-ink-muted">最低投資金額 {formatTWD(min)}</p>
+                  <p className="text-xs text-ink-muted">最低投資金額 {formatWpt(wptMin)}（對價 {formatTWD(min)}）</p>
+
+                  <div className="mt-1 flex items-center justify-between gap-2 rounded-xl border border-hairline bg-plane px-3 py-2">
+                    <span className="text-xs text-ink-secondary">對價（新台幣）</span>
+                    <span className="tabular font-mono text-xs font-medium text-ink">
+                      {formatTWD(amount)}（1 WPT = {formatTWD(WPT_RATE_TWD)}）
+                    </span>
+                  </div>
+                  <p className="text-xs text-ink-muted">
+                    我的平台幣餘額 {formatWpt(wptBalance)}
+                    {insufficientWpt && (
+                      <>
+                        ．餘額不足，
+                        <Link to="/token-exchange" className="font-medium text-accent-700 hover:text-accent-800">
+                          前往兌換平台幣 →
+                        </Link>
+                      </>
+                    )}
+                  </p>
                 </div>
 
-                <Button className="mt-6 w-full" size="lg" onClick={handleInvest}>
+                <Button className="mt-6 w-full" size="lg" onClick={handleInvest} disabled={insufficientWpt}>
                   確認投資
                 </Button>
                 <p className="mt-3 text-center text-[11px] leading-relaxed text-ink-muted">

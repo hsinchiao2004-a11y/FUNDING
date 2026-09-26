@@ -3,6 +3,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 export interface Application {
   amount: number;
   allocation: { label: string; pct: number }[];
+  shareRatePct: number; // 商家於核准後自行設定的每月營收分潤比例
+  rewardOffers: string[]; // 商家於核准後自行設定的投資人回饋方式
   submittedAt: string;
 }
 

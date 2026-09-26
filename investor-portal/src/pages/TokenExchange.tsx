@@ -1,9 +1,9 @@
 import { useState } from "react";
 import clsx from "clsx";
-import { Coins, Info, CheckCircle, X } from "@phosphor-icons/react";
+import { Coins, Info, CheckCircle, X, ArrowsDownUp } from "@phosphor-icons/react";
 import { useTokenMarket, type CashCurrency, type TokenListingStatus } from "../lib/TokenMarketContext";
 import { Button } from "../components/Button";
-import { formatByCurrency } from "../lib/format";
+import { formatByCurrency, formatTWD, formatWpt, twdToWpt, WPT_RATE_TWD } from "../lib/format";
 
 const CURRENCIES: CashCurrency[] = ["TWD", "USDT", "USDC"];
 const currencyLabel: Record<CashCurrency, string> = {
@@ -29,11 +29,19 @@ function StatusBadge({ status }: { status: TokenListingStatus }) {
 type Tab = "board" | "mine";
 
 export function TokenExchange() {
-  const { wptBalance, listings, listForCash, cancelListing, takeListing } = useTokenMarket();
+  const { wptBalance, listings, listForCash, cancelListing, takeListing, buyWithTwd } = useTokenMarket();
   const [tab, setTab] = useState<Tab>("board");
   const [amountDraft, setAmountDraft] = useState(0);
   const [priceDraft, setPriceDraft] = useState(0);
   const [currencyDraft, setCurrencyDraft] = useState<CashCurrency>("TWD");
+  const [buyTwdDraft, setBuyTwdDraft] = useState(10_000);
+
+  const buyWptPreview = twdToWpt(buyTwdDraft);
+  const submitBuy = () => {
+    if (buyTwdDraft <= 0) return;
+    buyWithTwd(buyTwdDraft);
+    setBuyTwdDraft(0);
+  };
 
   const boardListings = listings
     .filter((l) => l.seller !== "me")
@@ -78,6 +86,39 @@ export function TokenExchange() {
           <p className="tabular font-mono text-lg font-medium text-ink">{wptBalance.toLocaleString("zh-Hant-TW")} WPT</p>
         </div>
       </div>
+
+      <section className="mt-8 rounded-2xl border border-hairline bg-surface p-6">
+        <div className="flex items-center gap-2">
+          <ArrowsDownUp size={16} weight="duotone" className="text-accent-600" />
+          <h2 className="text-sm font-medium text-ink">用新台幣兌換平台幣</h2>
+        </div>
+        <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+          投資特定商家前，須先將新台幣兌換為平台幣（WPT）。平台固定掛牌匯率為 1 WPT = {formatTWD(WPT_RATE_TWD)}，
+          兌換即時到帳，之後即可於商家頁面用平台幣投資分潤權。
+        </p>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+          <div className="flex flex-1 flex-col gap-1.5">
+            <label className="text-xs font-medium text-ink-secondary">兌換金額</label>
+            <div className="flex items-center gap-2 rounded-xl border border-hairline bg-plane px-3 py-2 focus-within:border-accent-400">
+              <span className="text-sm text-ink-muted">NT$</span>
+              <input
+                type="number"
+                min={0}
+                step={1000}
+                value={buyTwdDraft}
+                onChange={(e) => setBuyTwdDraft(Number(e.target.value) || 0)}
+                className="tabular w-full bg-transparent font-mono text-sm text-ink outline-none"
+              />
+            </div>
+          </div>
+          <p className="tabular shrink-0 text-sm text-ink-secondary sm:pb-2.5">
+            ≈ {formatWpt(buyWptPreview)}
+          </p>
+          <Button size="md" disabled={buyTwdDraft <= 0} onClick={submitBuy}>
+            確認兌換
+          </Button>
+        </div>
+      </section>
 
       <div className="mt-8 flex gap-2 border-b border-hairline">
         <button

@@ -5,7 +5,7 @@ import { usePortfolio } from "../lib/PortfolioContext";
 import { getMerchant } from "../data/merchants";
 import { StatTile } from "../components/StatTile";
 import { Button, buttonClasses } from "../components/Button";
-import { formatTWD } from "../lib/format";
+import { formatTWD, formatWpt, twdToWpt } from "../lib/format";
 
 export function Portfolio() {
   const {
@@ -73,7 +73,8 @@ export function Portfolio() {
           <div className="mt-8 grid grid-cols-2 gap-6 rounded-2xl border border-hairline bg-surface p-6 sm:grid-cols-4">
             <StatTile
               label="累計投資總額"
-              value={formatTWD(totalInvested)}
+              value={formatWpt(twdToWpt(totalInvested))}
+              hint={`對價 ${formatTWD(totalInvested)}`}
             />
             <StatTile label="投資商家數" value={merchantsInvested} />
             <StatTile label="投資筆數" value={holdings.length} />
@@ -148,8 +149,9 @@ export function Portfolio() {
                     </Link>
                     <div className="text-right">
                       <p className="tabular font-mono text-sm font-medium text-ink">
-                        {formatTWD(holding.amount)}
+                        {formatWpt(twdToWpt(holding.amount))}
                       </p>
+                      <p className="text-xs text-ink-muted">對價 {formatTWD(holding.amount)}</p>
                       <p className="inline-flex items-center gap-1 text-xs text-ink-muted">
                         <TrendUp size={13} />
                         預估 {merchant.financing.expectedAnnualReturn[0]}–{merchant.financing.expectedAnnualReturn[1]}%

@@ -3,7 +3,7 @@ import { ArrowUpRight, Storefront } from "@phosphor-icons/react";
 import type { Merchant } from "../data/merchants";
 import { RiskBadge } from "./Badge";
 import { ProgressBar } from "./ProgressBar";
-import { formatCompactTWD, formatPct } from "../lib/format";
+import { formatCompactTWD, formatPct, formatWpt, twdToWpt } from "../lib/format";
 
 export function MerchantCard({ merchant }: { merchant: Merchant }) {
   const { financing } = merchant;
@@ -42,10 +42,11 @@ export function MerchantCard({ merchant }: { merchant: Merchant }) {
       <div className="mt-auto flex flex-col gap-2">
         <div className="flex items-baseline justify-between text-sm">
           <span className="tabular font-mono text-ink">
-            已募 {formatCompactTWD(financing.raised)}
+            已募 {formatWpt(twdToWpt(financing.raised))}
           </span>
           <span className="text-ink-muted">{formatPct(pctFunded, 0)}</span>
         </div>
+        <p className="text-xs text-ink-muted">對價 {formatCompactTWD(financing.raised)}</p>
         <ProgressBar value={financing.raised} max={financing.amount} />
         <div className="flex items-baseline justify-between pt-1 text-xs text-ink-muted">
           <span>預估年化 {financing.expectedAnnualReturn[0]}–{financing.expectedAnnualReturn[1]}%</span>

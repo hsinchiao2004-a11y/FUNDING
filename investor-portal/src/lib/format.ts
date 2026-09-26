@@ -18,5 +18,13 @@ export const formatByCurrency = (value: number, currency: "TWD" | "USDT" | "USDC
   return `${new Intl.NumberFormat("zh-Hant-TW", { maximumFractionDigits: 2 }).format(value)} ${currency}`;
 };
 
+// 平台幣（挺店幣／WPT）固定掛牌匯率：1 WPT = NT$1,000。投資人將平台幣轉入特定
+// 商家專屬合約才構成投資，因此投資金額一律以 WPT 計價，而非直接以新台幣計價。
+export const WPT_RATE_TWD = 1000;
+export const twdToWpt = (twd: number): number => twd / WPT_RATE_TWD;
+export const wptToTwd = (wpt: number): number => wpt * WPT_RATE_TWD;
+export const formatWpt = (wpt: number): string =>
+  `${new Intl.NumberFormat("zh-Hant-TW", { maximumFractionDigits: 2 }).format(wpt)} WPT`;
+
 export const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));

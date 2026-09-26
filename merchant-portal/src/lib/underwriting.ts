@@ -18,6 +18,7 @@ export interface CreditAssessment {
   suggestedRange: [number, number];
   monthlyQuota: number;
   minRepayPct: number;
+  suggestedShareRateRange: [number, number]; // 每月營收分潤比例建議區間（%），核准後由商家自行於此區間內設定
 }
 
 export const emptyCreditProfile: CreditProfile = {
@@ -51,6 +52,16 @@ const tierMultiplier: Record<CreditTier, number> = {
   待改善: 0.6,
 };
 
+// 分潤比例建議區間（%）：信用評級愈高，代表營收愈穩定、投資人風險愈低，
+// 商家不需要用較高的分潤比例來吸引投資人；評級愈低則反之。示範用途，
+// 對應企劃書「rshare 由 AI Agent 依店況於 4%～8% 間動態核算」之精神。
+const shareRateRangeByTier: Record<CreditTier, [number, number]> = {
+  優良: [4, 5.5],
+  良好: [4.5, 6.5],
+  普通: [5.5, 7],
+  待改善: [6.5, 8],
+};
+
 const BASE_RANGE: [number, number] = [800_000, 1_200_000];
 
 const roundTo = (value: number, step: number) => Math.round(value / step) * step;
@@ -77,6 +88,7 @@ export function assessCredit(profile: CreditProfile): CreditAssessment | null {
     suggestedRange: [min, max],
     monthlyQuota,
     minRepayPct,
+    suggestedShareRateRange: shareRateRangeByTier[tier],
   };
 }
 

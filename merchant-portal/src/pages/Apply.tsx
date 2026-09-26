@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import clsx from "clsx";
 import {
   Sparkle,
   Info,
@@ -12,6 +13,8 @@ import {
   X,
   ShieldCheck,
   CircleNotch,
+  Check,
+  Gift,
 } from "@phosphor-icons/react";
 import { useApplications } from "../lib/ApplicationContext";
 import {
@@ -38,7 +41,9 @@ const initialItems: AllocationItem[] = [
   { id: 3, label: "設備採購", pct: 20 },
 ];
 
-type Stage = "verify" | "result" | "amount" | "success";
+const REWARD_PRESETS = ["優惠券", "店內特色紀念小物", "會員專屬活動", "到店消費折抵"];
+
+type Stage = "verify" | "result" | "terms" | "amount" | "success";
 
 export function Apply() {
   const { applications, submit } = useApplications();
@@ -51,6 +56,11 @@ export function Apply() {
   const [amount, setAmount] = useState(0);
   const [items, setItems] = useState<AllocationItem[]>(initialItems);
   const nextId = useRef(initialItems.length + 1);
+
+  // 核准後才可設定的細項：分潤比例與回饋方式，皆由商家自行決定。
+  const [shareRatePct, setShareRatePct] = useState(0);
+  const [rewardOffers, setRewardOffers] = useState<string[]>([]);
+  const [customReward, setCustomReward] = useState("");
 
   const companyNameValid = profile.companyName.trim() !== "";
   const taxIdValid = isValidTaxId(profile.taxId);
@@ -91,6 +101,17 @@ export function Apply() {
     setStage("result");
   };
 
+  const goToTerms = () => {
+    if (!assessment) return;
+    const [minRate, maxRate] = assessment.suggestedShareRateRange;
+    setShareRatePct(Math.round((minRate + maxRate) / 2 * 10) / 10);
+    setStage("terms");
+  };
+
+  const toggleReward = (r: string) => {
+    setRewardOffers((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
+  };
+
   const startApplication = () => {
     if (!assessment) return;
     const [min, max] = assessment.suggestedRange;
@@ -112,9 +133,16 @@ export function Apply() {
   const removeItem = (id: number) =>
     setItems((prev) => (prev.length > 1 ? prev.filter((item) => item.id !== id) : prev));
 
+  const allRewards = [...rewardOffers, ...(customReward.trim() ? [customReward.trim()] : [])];
+
   const handleSubmit = () => {
     if (!isValidAllocation) return;
-    submit({ amount, allocation: items.map(({ label, pct }) => ({ label: label.trim(), pct })) });
+    submit({
+      amount,
+      allocation: items.map(({ label, pct }) => ({ label: label.trim(), pct })),
+      shareRatePct,
+      rewardOffers: allRewards,
+    });
     setStage("success");
   };
 
@@ -127,8 +155,12 @@ export function Apply() {
         </div>
         <h1 className="mt-4 text-2xl font-medium tracking-tight text-ink">申請已送出（示範）</h1>
         <p className="mt-2 text-sm text-ink-secondary">
-          {profile.companyName || "貴公司"}申請金額 {formatTWD(amount)}，平台將於 1–2 個工作天內完成 AI 風險評估與人工審查。
+          {profile.companyName || "貴公司"}申請金額 {formatTWD(amount)}，每月營收分潤比例 {shareRatePct}%，
+          平台將於 1–2 個工作天內完成 AI 風險評估與人工審查。
         </p>
+        {allRewards.length > 0 && (
+          <p className="mt-2 text-xs text-ink-muted">投資人回饋方案：{allRewards.join("、")}</p>
+        )}
         <Button className="mt-6" onClick={() => setStage("amount")}>
           再送一筆申請
         </Button>
@@ -150,7 +182,9 @@ export function Apply() {
           <span>—</span>
           <span>② 核貸結果</span>
           <span>—</span>
-          <span>③ 申請金額</span>
+          <span>③ 分潤與回饋設定</span>
+          <span>—</span>
+          <span>④ 申請金額</span>
         </div>
 
         <div className="mt-6 flex flex-col gap-5 rounded-2xl border border-hairline bg-surface p-6">
@@ -361,7 +395,9 @@ export function Apply() {
           <span>—</span>
           <span className="text-accent-700">② 核貸結果</span>
           <span>—</span>
-          <span>③ 申請金額</span>
+          <span>③ 分潤與回饋設定</span>
+          <span>—</span>
+          <span>④ 申請金額</span>
         </div>
 
         <div className="mt-6 rounded-2xl border border-hairline bg-surface p-6">
@@ -401,8 +437,90 @@ export function Apply() {
           )}
         </div>
 
-        <Button className="mt-6 w-full" size="lg" onClick={startApplication}>
+        <Button className="mt-6 w-full" size="lg" onClick={goToTerms}>
           繼續申請融資
+        </Button>
+      </div>
+    );
+  }
+
+  // ---------- Stage: terms (share rate + reward, only selectable after approval) ----------
+  if (stage === "terms" && assessment) {
+    const [minRate, maxRate] = assessment.suggestedShareRateRange;
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-12">
+        <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">分潤與回饋設定</h1>
+        <div className="mt-6 flex items-center gap-2 text-xs font-medium text-ink-muted">
+          <button onClick={() => setStage("verify")} className="hover:text-ink">① 核實資料</button>
+          <span>—</span>
+          <button onClick={() => setStage("result")} className="hover:text-ink">② 核貸結果</button>
+          <span>—</span>
+          <span className="text-accent-700">③ 分潤與回饋設定</span>
+          <span>—</span>
+          <span>④ 申請金額</span>
+        </div>
+        <p className="mt-4 max-w-lg text-sm leading-relaxed text-ink-secondary">
+          核貸審核通過後，才可自行設定每月營收分潤比例與投資人回饋方式，做為募資頁面上的招募條件。
+        </p>
+
+        <div className="mt-6 rounded-2xl border border-hairline bg-surface p-6">
+          <label htmlFor="share-rate" className="text-sm font-medium text-ink">
+            每月營收分潤比例
+          </label>
+          <p className="mt-1 text-xs text-ink-muted">
+            AI 依信用評級建議區間 {minRate}%–{maxRate}%，比例愈高愈能吸引投資人，但每月分潤成本也愈高。
+          </p>
+          <div className="mt-3 flex items-center gap-3">
+            <input
+              id="share-rate"
+              type="range"
+              min={minRate}
+              max={maxRate}
+              step={0.1}
+              value={shareRatePct}
+              onChange={(e) => setShareRatePct(Number(e.target.value))}
+              className="w-full accent-accent-600"
+            />
+            <span className="tabular w-16 shrink-0 text-right font-mono text-lg font-medium text-ink">
+              {shareRatePct.toFixed(1)}%
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-hairline bg-surface p-6">
+          <span className="flex items-center gap-1.5 text-sm font-medium text-ink">
+            <Gift size={16} className="text-ink-muted" /> 投資人回饋方式
+          </span>
+          <p className="mt-1 text-xs text-ink-muted">可複選，或自行填寫其他回饋內容。</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {REWARD_PRESETS.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => toggleReward(r)}
+                className={clsx(
+                  "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
+                  rewardOffers.includes(r)
+                    ? "bg-accent-600 text-white"
+                    : "border border-hairline bg-plane text-ink-secondary hover:text-ink",
+                )}
+              >
+                {rewardOffers.includes(r) && <Check size={13} weight="bold" />}
+                {r}
+              </button>
+            ))}
+          </div>
+          <input
+            type="text"
+            value={customReward}
+            onChange={(e) => setCustomReward(e.target.value)}
+            placeholder="其他回饋方式（選填）"
+            className="mt-3 w-full rounded-xl border border-hairline bg-plane px-3 py-2 text-sm text-ink outline-none focus:border-accent-400"
+          />
+        </div>
+
+        <Button className="mt-6 w-full" size="lg" onClick={startApplication}>
+          繼續申請金額
         </Button>
       </div>
     );
@@ -420,7 +538,9 @@ export function Apply() {
         <span>—</span>
         <button onClick={() => setStage("result")} className="hover:text-ink">② 核貸結果</button>
         <span>—</span>
-        <span className="text-accent-700">③ 申請金額</span>
+        <button onClick={() => setStage("terms")} className="hover:text-ink">③ 分潤與回饋設定</button>
+        <span>—</span>
+        <span className="text-accent-700">④ 申請金額</span>
       </div>
 
       <div className="mt-6 flex items-start gap-3 rounded-2xl border border-accent-200 bg-accent-50 p-4">
@@ -547,7 +667,10 @@ export function Apply() {
               .reverse()
               .map((a, i) => (
                 <div key={i} className="flex items-center justify-between p-4 text-sm">
-                  <span className="tabular font-mono text-ink">{formatTWD(a.amount)}</span>
+                  <div>
+                    <span className="tabular font-mono text-ink">{formatTWD(a.amount)}</span>
+                    <span className="tabular ml-2 text-xs text-ink-muted">分潤 {a.shareRatePct}%</span>
+                  </div>
                   <span className="text-xs text-ink-muted">
                     {new Date(a.submittedAt).toLocaleString("zh-Hant-TW")}
                   </span>

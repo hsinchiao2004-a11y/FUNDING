@@ -6,7 +6,7 @@ import { useTransferMarket, type IntentStatus, type SettlementCurrency } from ".
 import { getMerchant, type RiskTier } from "../data/merchants";
 import { getExitMatchSuggestion, suggestedExitPrice } from "../lib/agentMatch";
 import { Button } from "../components/Button";
-import { formatTWD, formatByCurrency, formatPct } from "../lib/format";
+import { formatTWD, formatByCurrency, formatPct, formatWpt, twdToWpt } from "../lib/format";
 
 const CURRENCIES: SettlementCurrency[] = ["TWD", "USDT", "USDC", "WPT"];
 const currencyLabel: Record<SettlementCurrency, string> = {
@@ -137,7 +137,7 @@ export function Transfers() {
                   <div>
                     <p className="font-medium text-ink">{merchant.name}</p>
                     <p className="text-xs text-ink-muted">
-                      {isMine ? "你的刊登" : intent.seller} · 面額 {formatTWD(intent.amount)}
+                      {isMine ? "你的刊登" : intent.seller} · 面額 {formatWpt(twdToWpt(intent.amount))}（對價 {formatTWD(intent.amount)}）
                     </p>
                   </div>
                 </div>
@@ -195,7 +195,9 @@ export function Transfers() {
                           </div>
                           <div>
                             <p className="font-medium text-ink">{merchant.name}</p>
-                            <p className="tabular text-xs text-ink-muted">面額 {formatTWD(holding.amount)}</p>
+                            <p className="tabular text-xs text-ink-muted">
+                              面額 {formatWpt(twdToWpt(holding.amount))}（對價 {formatTWD(holding.amount)}）
+                            </p>
                             <p className="mt-1 inline-flex items-center gap-1 text-xs text-accent-700">
                               <Robot size={13} weight="duotone" />
                               Agent 已找到 {suggestion.matches} 位潛在承接方
@@ -288,7 +290,7 @@ export function Transfers() {
                       <div>
                         <p className="text-sm font-medium text-ink">{merchant.name}</p>
                         <p className="tabular text-xs text-ink-muted">
-                          面額 {formatTWD(intent.amount)} · 希望價金 {formatByCurrency(intent.askPrice, intent.currency)}
+                          面額 {formatWpt(twdToWpt(intent.amount))} · 希望價金 {formatByCurrency(intent.askPrice, intent.currency)}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
