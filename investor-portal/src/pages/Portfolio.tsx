@@ -93,7 +93,7 @@ export function Portfolio() {
           </div>
 
           {(totalAccruedDividend > 0 || totalCashWithdrawn > 0 || totalReinvested > 0 || storeCredits.length > 0) && (
-            <section className="mt-10">
+            <section id="dividend-summary" className="mt-10 scroll-mt-6">
               <h2 className="text-lg font-medium text-ink">分潤總覽</h2>
               <p className="mt-1 text-sm text-ink-secondary">
                 分潤可以提領現金、折抵為到店消費金（加碼比例依各商家而異），或滾入同一筆持股自動再投資，
@@ -170,7 +170,7 @@ export function Portfolio() {
                     </div>
                   </div>
 
-                  {holding.accruedDividend > 0 && (
+                  {holding.accruedDividend > 0 ? (
                     <div className="flex flex-col gap-2.5 rounded-xl border border-hairline bg-plane p-3.5 sm:flex-row sm:items-center sm:justify-between">
                       <span className="inline-flex items-center gap-1.5 text-sm text-ink-secondary">
                         <Coins size={15} weight="duotone" className="text-accent-600" />
@@ -198,6 +198,14 @@ export function Portfolio() {
                         </div>
                       )}
                     </div>
+                  ) : (
+                    <p className="text-xs text-ink-muted">
+                      本期分潤已處理完畢——提領現金、滾入再投資或折抵消費金的紀錄請見上方
+                      <a href="#dividend-summary" className="font-medium text-accent-700 hover:text-accent-800">
+                        「分潤總覽」
+                      </a>
+                      ，下一期分潤入帳後會再出現在這裡。
+                    </p>
                   )}
                 </div>
               );
