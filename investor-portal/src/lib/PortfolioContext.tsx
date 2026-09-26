@@ -30,6 +30,8 @@ interface PortfolioState {
   redeemCash: (index: number) => void;
   redeemAsCredit: (index: number) => void;
   reinvest: (index: number) => void;
+  simulateMonthlyCycle: () => void;
+  cyclesCompleted: number;
   totalInvested: number;
   totalAccruedDividend: number;
   totalReinvested: number;
@@ -40,11 +42,14 @@ const STORAGE_KEY = "wangpu.portfolio.v1";
 const CREDIT_STORAGE_KEY = "wangpu.store-credits.v1";
 const WITHDRAWN_STORAGE_KEY = "wangpu.cash-withdrawn.v1";
 const REINVESTED_STORAGE_KEY = "wangpu.reinvested.v1";
+const CYCLES_STORAGE_KEY = "wangpu.dividend-cycles.v1";
 
-// 示範用：投資成立後，模擬一筆已入帳的分潤（金額的 2%–5%），讓分潤運用功能一開始就有東西可互動。
-// 下限 100 元，避免最低投資金額（NT$1,000）算出來的分潤四捨五入變成 0，導致
-// 提領現金／滾入再投資／折抵消費金這幾個操作完全不會出現。
-const seedAccrual = (amount: number) => Math.max(100, Math.round((amount * (0.02 + Math.random() * 0.03)) / 100) * 100);
+// 示範用：模擬單一期（一個月）分潤入帳金額（本金的 2%–5%）。下限 100 元，
+// 避免最低投資金額（NT$1,000）算出來的分潤四捨五入變成 0。
+// 注意：這個函式只在「模擬下一期分潤入帳」被觸發時才會呼叫，投資剛成立的
+// 當下不會憑空生出分潤——剛投資完不可能已經有分潤，時間軸才合理。
+const simulatePeriodDividend = (amount: number) =>
+  Math.max(100, Math.round((amount * (0.02 + Math.random() * 0.03)) / 100) * 100);
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [holdings, setHoldings] = useState<Holding[]>(() => {
@@ -101,11 +106,24 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(REINVESTED_STORAGE_KEY, String(totalReinvested));
   }, [totalReinvested]);
 
+  const [cyclesCompleted, setCyclesCompleted] = useState<number>(() => {
+    try {
+      const raw = localStorage.getItem(CYCLES_STORAGE_KEY);
+      return raw ? Number(raw) || 0 : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(CYCLES_STORAGE_KEY, String(cyclesCompleted));
+  }, [cyclesCompleted]);
+
   const invest = (merchantId: string, amount: number, payoutMode: PayoutMode = "monthly") => {
     if (!merchants.some((m) => m.id === merchantId) || amount <= 0) return;
     setHoldings((prev) => [
       ...prev,
-      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: seedAccrual(amount), payoutMode },
+      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: 0, payoutMode },
     ]);
   };
 
@@ -120,7 +138,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   const addHolding = (merchantId: string, amount: number) => {
     setHoldings((prev) => [
       ...prev,
-      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: seedAccrual(amount), payoutMode: "monthly" },
+      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: 0, payoutMode: "monthly" },
     ]);
   };
 
@@ -164,6 +182,31 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  // 示範用「時間快轉」：模擬下一期（一個月）分潤入帳。每筆持股各自依本金
+  // 算出當期分潤——「每月自動再投資」的持股會直接複利滾入本金（不需要手動
+  // 點擊滾入再投資），「每月分潤」與「到期一次提領」的持股則把當期分潤累加
+  // 到 accruedDividend，交由投資人自行處理或等待到期撥付。
+  //
+  // 計算建立在目前 render 讀到的 holdings 快照上（而非 setHoldings 的
+  // updater 內部），避免在 updater 裡累加外部變數——React StrictMode 開發
+  // 模式會把 updater 多呼叫一次，那樣寫會讓 totalReinvested 被重複累加。
+  const simulateMonthlyCycle = () => {
+    let reinvestedThisCycle = 0;
+    const next = holdings.map((h) => {
+      const period = simulatePeriodDividend(h.amount);
+      if (h.payoutMode === "reinvest") {
+        reinvestedThisCycle += period;
+        return { ...h, amount: h.amount + period };
+      }
+      return { ...h, accruedDividend: h.accruedDividend + period };
+    });
+    setHoldings(next);
+    if (reinvestedThisCycle > 0) {
+      setTotalReinvested((t) => t + reinvestedThisCycle);
+    }
+    setCyclesCompleted((c) => c + 1);
+  };
+
   const totalInvested = useMemo(
     () => holdings.reduce((sum, h) => sum + h.amount, 0),
     [holdings],
@@ -186,6 +229,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         redeemCash,
         redeemAsCredit,
         reinvest,
+        simulateMonthlyCycle,
+        cyclesCompleted,
         totalInvested,
         totalAccruedDividend,
         totalReinvested,

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Wallet, Storefront, TrendUp, Compass, Coins, Ticket, ArrowsLeftRight, Robot, ArrowsClockwise } from "@phosphor-icons/react";
+import { Wallet, Storefront, TrendUp, Compass, Coins, Ticket, ArrowsLeftRight, Robot, ArrowsClockwise, FastForward } from "@phosphor-icons/react";
 import { usePortfolio, type PayoutMode } from "../lib/PortfolioContext";
 import { getMerchant } from "../data/merchants";
 import { StatTile } from "../components/StatTile";
@@ -24,6 +24,8 @@ export function Portfolio() {
     redeemCash,
     redeemAsCredit,
     reinvest,
+    simulateMonthlyCycle,
+    cyclesCompleted,
   } = usePortfolio();
 
   const merchantsInvested = useMemo(
@@ -134,7 +136,16 @@ export function Portfolio() {
             </section>
           )}
 
-          <h2 className="mt-12 text-lg font-medium text-ink">持有明細</h2>
+          <div className="mt-12 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-lg font-medium text-ink">持有明細</h2>
+            <Button variant="ghost" size="md" onClick={simulateMonthlyCycle}>
+              <FastForward size={14} />
+              模擬下一期分潤入帳（示範）
+            </Button>
+          </div>
+          <p className="mt-1 text-xs text-ink-muted">
+            實際上線後分潤依商家每月營收自動入帳，本頁以此按鈕模擬時間經過，方便示範分潤相關功能。
+          </p>
           <div className="mt-5 flex flex-col divide-y divide-hairline rounded-2xl border border-hairline bg-surface">
             {holdings.map((holding, i) => {
               const merchant = getMerchant(holding.merchantId);
@@ -198,6 +209,14 @@ export function Portfolio() {
                         </div>
                       )}
                     </div>
+                  ) : holding.payoutMode === "reinvest" ? (
+                    <p className="text-xs text-ink-muted">
+                      {cyclesCompleted > 0
+                        ? "每期分潤已自動滾入本金，累計滾入金額請見上方「分潤總覽」。"
+                        : "尚未進入分潤週期，下一期分潤入帳後會自動滾入本金，不需手動操作。"}
+                    </p>
+                  ) : cyclesCompleted === 0 ? (
+                    <p className="text-xs text-ink-muted">尚未進入分潤週期，下一期分潤入帳後會出現在這裡。</p>
                   ) : (
                     <p className="text-xs text-ink-muted">
                       本期分潤已處理完畢——提領現金、滾入再投資或折抵消費金的紀錄請見上方
