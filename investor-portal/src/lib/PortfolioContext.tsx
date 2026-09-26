@@ -23,14 +23,17 @@ interface PortfolioState {
   addHolding: (merchantId: string, amount: number) => void;
   redeemCash: (index: number) => void;
   redeemAsCredit: (index: number) => void;
+  reinvest: (index: number) => void;
   totalInvested: number;
   totalAccruedDividend: number;
+  totalReinvested: number;
 }
 
 const PortfolioContext = createContext<PortfolioState | null>(null);
 const STORAGE_KEY = "wangpu.portfolio.v1";
 const CREDIT_STORAGE_KEY = "wangpu.store-credits.v1";
 const WITHDRAWN_STORAGE_KEY = "wangpu.cash-withdrawn.v1";
+const REINVESTED_STORAGE_KEY = "wangpu.reinvested.v1";
 
 // 示範用：投資成立後，模擬一筆已入帳的分潤（金額的 2%–5%），讓分潤運用功能一開始就有東西可互動。
 const seedAccrual = (amount: number) => Math.round((amount * (0.02 + Math.random() * 0.03)) / 100) * 100;
@@ -65,6 +68,15 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  const [totalReinvested, setTotalReinvested] = useState<number>(() => {
+    try {
+      const raw = localStorage.getItem(REINVESTED_STORAGE_KEY);
+      return raw ? Number(raw) || 0 : 0;
+    } catch {
+      return 0;
+    }
+  });
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(holdings));
   }, [holdings]);
@@ -76,6 +88,10 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem(WITHDRAWN_STORAGE_KEY, String(totalCashWithdrawn));
   }, [totalCashWithdrawn]);
+
+  useEffect(() => {
+    localStorage.setItem(REINVESTED_STORAGE_KEY, String(totalReinvested));
+  }, [totalReinvested]);
 
   const invest = (merchantId: string, amount: number) => {
     if (!merchants.some((m) => m.id === merchantId) || amount <= 0) return;
@@ -128,6 +144,18 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     setHoldings((prev) => prev.map((h, i) => (i === index ? { ...h, accruedDividend: 0 } : h)));
   };
 
+  // 每月自動再投資：本期分潤不撥出，直接滾入同一筆持股的本金，複利累積在
+  // 同一家商家的分潤權，而不是撥到投資人手上再重新投一次。
+  const reinvest = (index: number) => {
+    const holding = holdings[index];
+    if (!holding || holding.accruedDividend <= 0) return;
+    const rolledAmount = holding.accruedDividend;
+    setTotalReinvested((t) => t + rolledAmount);
+    setHoldings((prev) =>
+      prev.map((h, i) => (i === index ? { ...h, amount: h.amount + rolledAmount, accruedDividend: 0 } : h)),
+    );
+  };
+
   const totalInvested = useMemo(
     () => holdings.reduce((sum, h) => sum + h.amount, 0),
     [holdings],
@@ -149,8 +177,10 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         addHolding,
         redeemCash,
         redeemAsCredit,
+        reinvest,
         totalInvested,
         totalAccruedDividend,
+        totalReinvested,
       }}
     >
       {children}

@@ -7,6 +7,7 @@ import {
   ChartPieSlice,
   Handshake,
   ArrowsLeftRight,
+  ArrowClockwise,
   Megaphone,
   FileText,
   Pulse,
@@ -25,6 +26,14 @@ const suggestionByTier: Record<RiskTier, string> = {
   low: "營收穩定、風險偏低，AI 建議：維持現有部位，持續累積分潤。",
   medium: "營收處於成長期但波動較大，AI 建議：留意本月分潤入帳狀況，暫不加碼。",
   elevated: "近期波動較高，AI 建議：可考慮於轉讓看板部分變現，分散風險。",
+};
+
+// 分潤除了平台預設每月撥付，Agent 也會依營收表現主動提醒是否要滾入再投資——
+// 表現極佳時建議加碼複利，波動加大時則建議先觀察、暫緩再投資。
+const reinvestReminderByTier: Record<RiskTier, string> = {
+  low: "營收表現極佳，Agent 建議將本期分潤滾入再投資，複利累積分潤權。",
+  medium: "營收表現持平，Agent 暫不主動提醒再投資，維持每月分潤撥付即可。",
+  elevated: "波動偏大時，Agent 建議暫緩自動再投資，先觀察 1–2 期營收再決定。",
 };
 
 // 示範用：投資分身 Agent 這幾天實際跑過的檢查紀錄，強調「持續」而非「核准
@@ -235,6 +244,42 @@ export function Agents() {
               </span>
             </div>
           ))}
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-hairline bg-surface p-6">
+          <div className="flex items-center gap-2">
+            <ArrowClockwise size={16} weight="duotone" className="text-accent-600" />
+            <p className="text-sm font-medium text-ink">分潤再投資提醒</p>
+          </div>
+          <p className="mt-1 text-sm leading-relaxed text-ink-secondary">
+            分潤預設每月撥付，但 Agent 會依營收表現主動判斷是否該提醒你滾入再投資——營收表現極
+            佳時建議加碼複利，波動加大時則建議先觀察、暫緩再投資，而不是等你自己想到才去操作。
+          </p>
+          <div className="mt-4 flex flex-col divide-y divide-hairline">
+            {monitoredMerchants.map((merchant) => (
+              <div key={merchant.id} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-50 text-accent-700">
+                    <Storefront size={14} weight="duotone" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-ink">{merchant.name}</p>
+                    <p className="mt-0.5 max-w-md text-xs text-ink-secondary">
+                      {reinvestReminderByTier[merchant.riskTier]}
+                    </p>
+                  </div>
+                </div>
+                {hasHoldings && holdingTotals.get(merchant.id) && (
+                  <Link
+                    to="/portfolio"
+                    className="shrink-0 whitespace-nowrap text-xs font-medium text-accent-700 hover:text-accent-800"
+                  >
+                    前往滾入再投資 →
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

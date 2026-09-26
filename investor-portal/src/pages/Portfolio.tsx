@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Wallet, Storefront, TrendUp, Compass, Coins, Ticket, ArrowsLeftRight, Robot } from "@phosphor-icons/react";
+import { Wallet, Storefront, TrendUp, Compass, Coins, Ticket, ArrowsLeftRight, Robot, ArrowsClockwise } from "@phosphor-icons/react";
 import { usePortfolio } from "../lib/PortfolioContext";
 import { getMerchant } from "../data/merchants";
 import { StatTile } from "../components/StatTile";
@@ -14,8 +14,10 @@ export function Portfolio() {
     totalCashWithdrawn,
     totalInvested,
     totalAccruedDividend,
+    totalReinvested,
     redeemCash,
     redeemAsCredit,
+    reinvest,
   } = usePortfolio();
 
   const merchantsInvested = useMemo(
@@ -84,15 +86,17 @@ export function Portfolio() {
             />
           </div>
 
-          {(totalAccruedDividend > 0 || totalCashWithdrawn > 0 || storeCredits.length > 0) && (
+          {(totalAccruedDividend > 0 || totalCashWithdrawn > 0 || totalReinvested > 0 || storeCredits.length > 0) && (
             <section className="mt-10">
               <h2 className="text-lg font-medium text-ink">分潤總覽</h2>
               <p className="mt-1 text-sm text-ink-secondary">
-                分潤除了提領現金，也可以加碼折抵為到店消費金（加碼比例依各商家而異）——把投資收益導回實際消費。
+                分潤可以提領現金、折抵為到店消費金（加碼比例依各商家而異），或滾入同一筆持股自動再投資，
+                複利累積分潤——不必自己提領後再手動重新投資一次。
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-6 rounded-2xl border border-hairline bg-surface p-6 sm:grid-cols-3">
+              <div className="mt-4 grid grid-cols-2 gap-6 rounded-2xl border border-hairline bg-surface p-6 sm:grid-cols-4">
                 <StatTile label="可運用分潤（尚未提領）" value={formatTWD(totalAccruedDividend)} />
                 <StatTile label="累計已提領現金" value={formatTWD(totalCashWithdrawn)} />
+                <StatTile label="累計滾入再投資" value={formatTWD(totalReinvested)} />
                 <StatTile
                   label="消費金餘額"
                   value={formatTWD(storeCredits.reduce((sum, c) => sum + c.amount, 0))}
@@ -165,9 +169,13 @@ export function Portfolio() {
                         <Coins size={15} weight="duotone" className="text-accent-600" />
                         本筆已入帳分潤 <span className="tabular font-mono text-ink">{formatTWD(holding.accruedDividend)}</span>
                       </span>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <Button variant="ghost" size="md" onClick={() => redeemCash(i)}>
                           提領現金
+                        </Button>
+                        <Button variant="ghost" size="md" onClick={() => reinvest(i)}>
+                          <ArrowsClockwise size={14} />
+                          滾入再投資
                         </Button>
                         <Button size="md" onClick={() => redeemAsCredit(i)}>
                           折抵消費金 (+{Math.round((merchant.financing.creditBoostRate - 1) * 100)}%)
