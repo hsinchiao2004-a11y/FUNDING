@@ -1,11 +1,17 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Wallet, Storefront, TrendUp, Compass, Coins, Ticket, ArrowsLeftRight, Robot, ArrowsClockwise } from "@phosphor-icons/react";
-import { usePortfolio } from "../lib/PortfolioContext";
+import { usePortfolio, type PayoutMode } from "../lib/PortfolioContext";
 import { getMerchant } from "../data/merchants";
 import { StatTile } from "../components/StatTile";
 import { Button, buttonClasses } from "../components/Button";
 import { formatTWD, formatWpt, twdToWpt } from "../lib/format";
+
+const payoutModeLabel: Record<PayoutMode, string> = {
+  monthly: "每月分潤",
+  reinvest: "每月自動再投資",
+  maturity: "到期一次提領",
+};
 
 export function Portfolio() {
   const {
@@ -147,7 +153,8 @@ export function Portfolio() {
                       <div>
                         <p className="font-medium text-ink">{merchant.name}</p>
                         <p className="text-xs text-ink-muted">
-                          投資於 {investedDate.toLocaleDateString("zh-Hant-TW")}
+                          投資於 {investedDate.toLocaleDateString("zh-Hant-TW")} ·{" "}
+                          {payoutModeLabel[holding.payoutMode]}
                         </p>
                       </div>
                     </Link>
@@ -169,18 +176,27 @@ export function Portfolio() {
                         <Coins size={15} weight="duotone" className="text-accent-600" />
                         本筆已入帳分潤 <span className="tabular font-mono text-ink">{formatTWD(holding.accruedDividend)}</span>
                       </span>
-                      <div className="flex flex-wrap gap-2">
-                        <Button variant="ghost" size="md" onClick={() => redeemCash(i)}>
-                          提領現金
-                        </Button>
-                        <Button variant="ghost" size="md" onClick={() => reinvest(i)}>
+                      {holding.payoutMode === "maturity" ? (
+                        <span className="text-xs text-ink-muted">已鎖定至合約到期，屆時一次撥付現金</span>
+                      ) : holding.payoutMode === "reinvest" ? (
+                        <Button size="md" onClick={() => reinvest(i)}>
                           <ArrowsClockwise size={14} />
                           滾入再投資
                         </Button>
-                        <Button size="md" onClick={() => redeemAsCredit(i)}>
-                          折抵消費金 (+{Math.round((merchant.financing.creditBoostRate - 1) * 100)}%)
-                        </Button>
-                      </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="ghost" size="md" onClick={() => redeemCash(i)}>
+                            提領現金
+                          </Button>
+                          <Button variant="ghost" size="md" onClick={() => reinvest(i)}>
+                            <ArrowsClockwise size={14} />
+                            滾入再投資
+                          </Button>
+                          <Button size="md" onClick={() => redeemAsCredit(i)}>
+                            折抵消費金 (+{Math.round((merchant.financing.creditBoostRate - 1) * 100)}%)
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

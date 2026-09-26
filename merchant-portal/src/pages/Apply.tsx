@@ -15,8 +15,10 @@ import {
   CircleNotch,
   Check,
   Gift,
+  CurrencyBtc,
+  Vault,
 } from "@phosphor-icons/react";
-import { useApplications } from "../lib/ApplicationContext";
+import { useApplications, type CollateralType } from "../lib/ApplicationContext";
 import {
   emptyCreditProfile,
   fetchExternalCreditScore,
@@ -43,6 +45,16 @@ const initialItems: AllocationItem[] = [
 
 const REWARD_PRESETS = ["優惠券", "店內特色紀念小物", "會員專屬活動", "到店消費折抵"];
 
+// 抵押品比例：穩定幣波動極低，抵押比例較低；主流加密貨幣波動較大，抵押比例
+// 較高以預留緩衝空間。履約保證金固定為融資金額 10%，做為日常還款不足時的
+// 優先扣抵來源。
+const COLLATERAL_PCT: Record<CollateralType, number> = { stablecoin: 0.5, crypto: 0.6 };
+const GUARANTEE_DEPOSIT_PCT = 0.1;
+const COLLATERAL_OPTIONS: { value: CollateralType; label: string; desc: string }[] = [
+  { value: "stablecoin", label: "穩定幣（USDT／USDC）", desc: "幣值波動極低，抵押比例為融資金額 50%" },
+  { value: "crypto", label: "主流加密貨幣（BTC／ETH）", desc: "價格波動較大，抵押比例為融資金額 60%" },
+];
+
 type Stage = "verify" | "result" | "terms" | "amount" | "success";
 
 export function Apply() {
@@ -61,6 +73,10 @@ export function Apply() {
   const [shareRatePct, setShareRatePct] = useState(0);
   const [rewardOffers, setRewardOffers] = useState<string[]>([]);
   const [customReward, setCustomReward] = useState("");
+
+  // 抵押品設置：依申請金額計算抵押品與履約保證金金額。
+  const [collateralType, setCollateralType] = useState<CollateralType>("stablecoin");
+  const [useVasp, setUseVasp] = useState(false);
 
   const companyNameValid = profile.companyName.trim() !== "";
   const taxIdValid = isValidTaxId(profile.taxId);
@@ -134,6 +150,8 @@ export function Apply() {
     setItems((prev) => (prev.length > 1 ? prev.filter((item) => item.id !== id) : prev));
 
   const allRewards = [...rewardOffers, ...(customReward.trim() ? [customReward.trim()] : [])];
+  const collateralAmount = Math.round(amount * COLLATERAL_PCT[collateralType]);
+  const guaranteeDeposit = Math.round(amount * GUARANTEE_DEPOSIT_PCT);
 
   const handleSubmit = () => {
     if (!isValidAllocation) return;
@@ -142,6 +160,10 @@ export function Apply() {
       allocation: items.map(({ label, pct }) => ({ label: label.trim(), pct })),
       shareRatePct,
       rewardOffers: allRewards,
+      collateralType,
+      collateralAmount,
+      guaranteeDeposit,
+      useVasp,
     });
     setStage("success");
   };
@@ -161,6 +183,10 @@ export function Apply() {
         {allRewards.length > 0 && (
           <p className="mt-2 text-xs text-ink-muted">投資人回饋方案：{allRewards.join("、")}</p>
         )}
+        <p className="mt-2 text-xs text-ink-muted">
+          抵押品：{COLLATERAL_OPTIONS.find((o) => o.value === collateralType)?.label} {formatTWD(collateralAmount)}
+          {useVasp && "（委託 VASP 代發）"} ・ 履約保證金 {formatTWD(guaranteeDeposit)}
+        </p>
         <Button className="mt-6" onClick={() => setStage("amount")}>
           再送一筆申請
         </Button>
@@ -584,6 +610,60 @@ export function Apply() {
       </div>
 
       <div className="mt-6 rounded-2xl border border-hairline bg-surface p-6">
+        <span className="flex items-center gap-1.5 text-sm font-medium text-ink">
+          <Vault size={16} className="text-ink-muted" /> 抵押品設置
+        </span>
+        <p className="mt-1 text-xs text-ink-muted">
+          依融資金額提供虛擬資產作為抵押品，交由合作銀行以保管帳戶方式存放，平台不主動操作、運用或變現。
+        </p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          {COLLATERAL_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setCollateralType(opt.value)}
+              className={clsx(
+                "flex flex-col items-start gap-1 rounded-xl border p-3.5 text-left transition-colors",
+                collateralType === opt.value
+                  ? "border-accent-400 bg-accent-50"
+                  : "border-hairline bg-plane hover:border-accent-300",
+              )}
+            >
+              <span className="flex items-center gap-1.5 text-sm font-medium text-ink">
+                {collateralType === opt.value && <Check size={14} weight="bold" className="text-accent-700" />}
+                {opt.label}
+              </span>
+              <span className="text-xs text-ink-muted">{opt.desc}</span>
+            </button>
+          ))}
+        </div>
+
+        <label className="mt-3 flex items-start gap-2.5 rounded-xl border border-hairline bg-plane px-3 py-2.5">
+          <input
+            type="checkbox"
+            checked={useVasp}
+            onChange={(e) => setUseVasp(e.target.checked)}
+            className="mt-0.5 accent-accent-600"
+          />
+          <span className="inline-flex items-start gap-1.5 text-sm text-ink-secondary">
+            <CurrencyBtc size={16} className="mt-0.5 shrink-0 text-ink-muted" />
+            我目前沒有足夠虛擬資產，委託合作 VASP 代為發行抵押憑證代幣（另收代發手續費 1%）
+          </span>
+        </label>
+
+        <div className="mt-4 grid grid-cols-2 gap-6">
+          <div>
+            <p className="text-xs text-ink-muted">應提供抵押品金額</p>
+            <p className="tabular font-mono text-lg font-medium text-ink">{formatTWD(collateralAmount)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-ink-muted">履約保證金（融資金額 10%）</p>
+            <p className="tabular font-mono text-lg font-medium text-ink">{formatTWD(guaranteeDeposit)}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-hairline bg-surface p-6">
         <div className="flex items-baseline justify-between">
           <span className="text-sm font-medium text-ink">資金用途分配</span>
           <span className={`tabular text-sm font-medium ${total === 100 ? "text-accent-700" : "text-status-critical"}`}>
@@ -655,6 +735,9 @@ export function Apply() {
         送出申請
       </Button>
       <p className="mt-3 text-center text-[11px] leading-relaxed text-ink-muted">
+        平台將於第一筆撥款時收取融資金額 2%–3% 作為核貸手續費，實際費率依信用評級核定。
+      </p>
+      <p className="mt-1 text-center text-[11px] leading-relaxed text-ink-muted">
         本頁為產品原型示範，送出後不會產生真實融資申請。
       </p>
 

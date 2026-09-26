@@ -18,8 +18,14 @@ import { ProgressBar } from "../components/ProgressBar";
 import { RiskBadge } from "../components/Badge";
 import { Button } from "../components/Button";
 import { formatCompactTWD, formatTWD, formatPct, formatWpt, twdToWpt, wptToTwd, WPT_RATE_TWD, clamp } from "../lib/format";
-import { usePortfolio } from "../lib/PortfolioContext";
+import { usePortfolio, type PayoutMode } from "../lib/PortfolioContext";
 import { useTokenMarket } from "../lib/TokenMarketContext";
+
+const PAYOUT_MODE_OPTIONS: { value: PayoutMode; label: string; desc: string }[] = [
+  { value: "monthly", label: "每月分潤", desc: "每月分潤入帳後，自行選擇提領現金或折抵消費金" },
+  { value: "reinvest", label: "每月自動再投資", desc: "每月分潤自動滾入本金，複利累積分潤權" },
+  { value: "maturity", label: "到期一次提領", desc: "分潤持續累積，合約到期後一次撥付現金" },
+];
 
 export function MerchantDetail() {
   const { id } = useParams();
@@ -35,6 +41,7 @@ export function MerchantDetail() {
   const wptMax = twdToWpt(max);
 
   const [wptAmount, setWptAmount] = useState(twdToWpt(5000));
+  const [payoutMode, setPayoutMode] = useState<PayoutMode>("monthly");
   const [success, setSuccess] = useState(false);
 
   const amount = wptToTwd(wptAmount);
@@ -48,7 +55,7 @@ export function MerchantDetail() {
 
   const handleInvest = () => {
     if (!spendWpt(wptAmount)) return;
-    invest(merchant.id, amount);
+    invest(merchant.id, amount, payoutMode);
     setSuccess(true);
   };
 
@@ -206,7 +213,8 @@ export function MerchantDetail() {
                 </div>
                 <p className="font-medium text-ink">投資已送出（示範）</p>
                 <p className="text-sm text-ink-secondary">
-                  你以 {formatWpt(wptAmount)}（對價 {formatTWD(amount)}）投資了 {merchant.name}。
+                  你以 {formatWpt(wptAmount)}（對價 {formatTWD(amount)}）投資了 {merchant.name}，
+                  分潤方式：{PAYOUT_MODE_OPTIONS.find((o) => o.value === payoutMode)?.label}。
                 </p>
                 <Link
                   to="/portfolio"
@@ -288,6 +296,28 @@ export function MerchantDetail() {
                       </>
                     )}
                   </p>
+                </div>
+
+                <div className="mt-6 flex flex-col gap-2">
+                  <span className="text-sm font-medium text-ink">分潤方式</span>
+                  <div className="flex flex-col gap-2">
+                    {PAYOUT_MODE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setPayoutMode(opt.value)}
+                        className={clsx(
+                          "flex flex-col items-start gap-0.5 rounded-xl border p-3 text-left transition-colors",
+                          payoutMode === opt.value
+                            ? "border-accent-400 bg-accent-50"
+                            : "border-hairline bg-plane hover:border-accent-300",
+                        )}
+                      >
+                        <span className="text-sm font-medium text-ink">{opt.label}</span>
+                        <span className="text-xs text-ink-muted">{opt.desc}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <Button className="mt-6 w-full" size="lg" onClick={handleInvest} disabled={insufficientWpt}>

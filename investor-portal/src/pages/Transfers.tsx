@@ -89,7 +89,9 @@ export function Transfers() {
         <p className="text-xs leading-relaxed text-ink-muted">
           點選「我要承接」後即時完成過戶、納入你的投資組合，不需等待審核。刊登轉讓意向時
           可選擇以新台幣、穩定幣（USDT、USDC），或平台原生代幣「挺店幣（WPT）」計價結算——
-          以挺店幣結算可享較低之媒合手續費。意願價格預設帶入 Agent 建議值，實際匯率以撮合
+          以挺店幣結算可享較低之媒合手續費。平台就成交金額收取
+          <span className="font-medium text-ink"> 0.5% </span>
+          之媒合手續費（買賣雙邊各收）。意願價格預設帶入 Agent 建議值，實際匯率以撮合
           當下之市場報價為準（本頁為示範用途）。
         </p>
       </div>

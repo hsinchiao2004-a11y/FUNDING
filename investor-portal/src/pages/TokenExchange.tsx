@@ -64,6 +64,7 @@ export function TokenExchange() {
       <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">平台幣兌現轉讓</h1>
       <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-secondary">
         尚未投入特定商家、或商家合約已結清而返還的挺店幣，可在這裡登記兌換為新台幣或穩定幣。
+        平台收取成交金額 <span className="font-medium text-ink">0.5%</span> 之手續費（買賣雙邊各收）。
       </p>
 
       <div className="mt-4 flex items-start gap-3 rounded-2xl border border-hairline bg-surface p-4">

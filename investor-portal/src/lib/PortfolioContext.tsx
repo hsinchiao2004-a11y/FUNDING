@@ -2,11 +2,17 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { getMerchant, merchants } from "../data/merchants";
 import { clamp } from "./format";
 
+// 分潤方式：投資當下三選一，對應企劃書「投資人可選每月分潤、每月自動再投資
+// 或是到期一次提領」。monthly 為預設（每期入帳後手動選擇提領/再投資/折抵），
+// reinvest 讓每期分潤自動滾入本金，maturity 則鎖住分潤累積至合約到期才撥付。
+export type PayoutMode = "monthly" | "reinvest" | "maturity";
+
 export interface Holding {
   merchantId: string;
   amount: number;
   investedAt: string; // ISO date
   accruedDividend: number; // 已入帳、尚未提領或折抵的分潤
+  payoutMode: PayoutMode;
 }
 
 export interface StoreCredit {
@@ -18,7 +24,7 @@ interface PortfolioState {
   holdings: Holding[];
   storeCredits: StoreCredit[];
   totalCashWithdrawn: number;
-  invest: (merchantId: string, amount: number) => void;
+  invest: (merchantId: string, amount: number, payoutMode?: PayoutMode) => void;
   removeHoldingAt: (index: number) => void;
   addHolding: (merchantId: string, amount: number) => void;
   redeemCash: (index: number) => void;
@@ -44,7 +50,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
       const parsed = JSON.parse(raw) as Array<Partial<Holding> & { merchantId: string; amount: number; investedAt: string }>;
-      return parsed.map((h) => ({ ...h, accruedDividend: h.accruedDividend ?? 0 }));
+      return parsed.map((h) => ({ ...h, accruedDividend: h.accruedDividend ?? 0, payoutMode: h.payoutMode ?? "monthly" }));
     } catch {
       return [];
     }
@@ -93,11 +99,11 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(REINVESTED_STORAGE_KEY, String(totalReinvested));
   }, [totalReinvested]);
 
-  const invest = (merchantId: string, amount: number) => {
+  const invest = (merchantId: string, amount: number, payoutMode: PayoutMode = "monthly") => {
     if (!merchants.some((m) => m.id === merchantId) || amount <= 0) return;
     setHoldings((prev) => [
       ...prev,
-      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: seedAccrual(amount) },
+      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: seedAccrual(amount), payoutMode },
     ]);
   };
 
@@ -112,7 +118,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   const addHolding = (merchantId: string, amount: number) => {
     setHoldings((prev) => [
       ...prev,
-      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: seedAccrual(amount) },
+      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: seedAccrual(amount), payoutMode: "monthly" },
     ]);
   };
 
