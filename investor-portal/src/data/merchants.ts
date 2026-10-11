@@ -168,7 +168,7 @@ const merchantSeeds: MerchantSeed[] = [
     storefronts: 1,
     rrs: 68,
     riskTier: "medium",
-    monthlyRevenue: m([310, 330, 300, 340, 360, 350, 380, 400, 370, 410, 430, 420]).map(v => v * 1000),
+    monthlyRevenue: m([310, 330, 300, 340, 360, 350, 380, 400, 370, 410, 430, 350]).map(v => v * 1000),
     financing: {
       amount: 1_500_000,
       monthlyShareRate: 0.04,
