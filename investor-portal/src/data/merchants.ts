@@ -3,6 +3,12 @@ export type RiskTier = "low" | "medium" | "elevated";
 // 對應企劃書「五、資料驗證機制」的黃燈／紅燈異常警示（三方資料勾稽結果）。
 // ok：資料勾稽正常；yellow：發票開立偏離或通訊異常中斷；red：金流結構劇變
 // 或營收陡降，次級市場轉讓功能依規則鎖定。
+//
+// 示範限制：這份警示狀態是 investor-portal 自己模擬的靜態資料，並非真的讀取
+// merchant-portal／Connections.tsx 的即時三方勾稽結果——兩個 portal 是各自
+// 獨立部署、沒有共用後端的前端原型，瀏覽器也依網域隔開 localStorage，天生
+// 連不起來。要做到真正即時聯動，需要加一層兩邊都能讀寫的共用後端（例如
+// Firebase／Supabase），目前刻意不做，以模擬資料示範 Agent 的判斷邏輯。
 export type AlertLevel = "ok" | "yellow" | "red";
 
 export interface Merchant {
