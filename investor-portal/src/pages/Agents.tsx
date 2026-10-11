@@ -10,9 +10,6 @@ import {
   ArrowsLeftRight,
   ArrowClockwise,
   Megaphone,
-  FileText,
-  Pulse,
-  Coins,
   CalendarCheck,
   WarningCircle,
   ShareNetwork,
@@ -48,51 +45,6 @@ const monitoringLog = [
   { time: "3 天前", note: "依最新月營收重新計算風險分數，2 家商家評級維持不變" },
 ];
 
-const scenario = [
-  {
-    time: "第 0 天",
-    title: "商家申請融資",
-    actor: "花見咖啡 Brew & Bloom．主理人陳雅婷",
-    icon: FileText,
-    body: "陳雅婷在商家端完成核實資料（統一編號、歷年稅籍、銀行帳戶、信用評分），核貸額度 NT$3,000,000，資金用途分配為租金保證金 40%、店面裝修 40%、設備採購 20%，平台核准並開放募資。",
-  },
-  {
-    time: "第 2 天",
-    title: "Agent 主動媒合，非投資人自己海選",
-    actor: "投資人 Lisa",
-    icon: MagnifyingGlass,
-    body: "Lisa 設定「穩定型」風險偏好後，Agent 主動把 RRS 82 分、低風險、預估年化報酬 9–13% 的花見咖啡推薦給她，而不是要她自己從一長串商家清單裡篩選。Lisa 投資 NT$20,000，同步解鎖「季度店主見面會」回饋。",
-  },
-  {
-    time: "第 4 個月",
-    title: "營收波動，風險監測管理 Agent 主動介入",
-    actor: "風險監測管理 Agent",
-    icon: Pulse,
-    body: "花見咖啡因店休整修，當月營收較預期下滑。Agent 偵測到異常後，主動通知 Lisa「本期分潤已同步下修，建議先觀察一季、暫不加碼」，同時標記商家端需補充說明——不需要 Lisa 自己盯營收數字。",
-  },
-  {
-    time: "第 4 個月",
-    title: "投資人變消費者 Agent 主動觸發回訪",
-    actor: "投資人變消費者 Agent → Lisa",
-    icon: Megaphone,
-    body: "Agent 同時偵測到 Lisa 已 45 天沒有到店消費，主動發送「投資人專屬 9 折」到店優惠通知。Lisa 到店消費、順便看看自己投資的店——投資關係變成實際消費，而不是等她自己想起來。",
-  },
-  {
-    time: "第 7 個月",
-    title: "營收回升，分潤入帳",
-    actor: "Lisa",
-    icon: Coins,
-    body: "花見咖啡營收回升至月營收 NT$940,000 以上，Lisa 當期分潤入帳，她選擇把部分分潤以 1.2 倍加碼折抵為到店消費金，而不是直接提領。",
-  },
-  {
-    time: "第 10 個月",
-    title: "提前退場，Agent 主動撮合承接方",
-    actor: "退場媒合 Agent → Lisa",
-    icon: Handshake,
-    body: "Lisa 因資金需求想提前變現剩餘部位。刊登轉讓意向的同時，退場媒合 Agent 已依市場行情建議意願價格，48 小時內完成與另一位投資人的過戶交割，Lisa 取得價金，不需在看板上被動等待。",
-  },
-];
-
 export function Agents() {
   const { holdings } = usePortfolio();
   const { notifications } = useNotifications();
@@ -124,8 +76,8 @@ export function Agents() {
   const loopMerchant = loopExample ? getMerchant(loopExample.merchantId) : undefined;
 
   const [referralCopied, setReferralCopied] = useState(false);
-  const shareWithFriends = async (merchantName: string) => {
-    const text = `我投資了「${merchantName}」，身為投資人享有專屬到店優惠，一起來看看這家店吧！`;
+  const shareWithFriends = async (merchantName: string, offer: string) => {
+    const text = `我投資了「${merchantName}」，這週到店消費享有我的投資人專屬優惠「${offer}」，一起來看看這家店、順便享優惠吧！`;
     try {
       await navigator.clipboard.writeText(text);
       setReferralCopied(true);
@@ -358,7 +310,7 @@ export function Agents() {
                 <p className="mt-1 text-sm leading-relaxed text-ink-secondary">{loopExample.message}</p>
                 <button
                   type="button"
-                  onClick={() => shareWithFriends(loopMerchant.name)}
+                  onClick={() => shareWithFriends(loopMerchant.name, loopExample.offer)}
                   className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-accent-700 hover:text-accent-800"
                 >
                   {referralCopied ? <Check size={13} weight="bold" /> : <ShareNetwork size={13} weight="duotone" />}
@@ -368,33 +320,6 @@ export function Agents() {
             </div>
           </div>
         )}
-      </section>
-
-      {/* 4. 情境示範 —— 具體人物與時間軸 */}
-      <section className="mt-10">
-        <h2 className="text-lg font-medium text-ink">情境示範</h2>
-        <p className="mt-1 max-w-xl text-sm leading-relaxed text-ink-secondary">
-          從商家申請融資到投資人提前退場，三種 Agent 如何在同一段旅程裡各自主動介入。
-        </p>
-
-        <div className="mt-6 flex flex-col">
-          {scenario.map((step, i) => (
-            <div key={step.title} className="flex gap-4">
-              <div className="flex flex-col items-center">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-50 text-accent-700">
-                  <step.icon size={16} weight="duotone" />
-                </div>
-                {i < scenario.length - 1 && <div className="w-px flex-1 bg-hairline" />}
-              </div>
-              <div className="flex-1 pb-8">
-                <p className="text-xs font-medium text-ink-muted">{step.time}</p>
-                <p className="mt-0.5 font-medium text-ink">{step.title}</p>
-                <p className="mt-0.5 text-xs text-accent-700">{step.actor}</p>
-                <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-secondary">{step.body}</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </section>
     </div>
   );
