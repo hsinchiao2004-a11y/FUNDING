@@ -96,7 +96,7 @@ const merchantSeeds: MerchantSeed[] = [
     storefronts: 2,
     rrs: 76,
     riskTier: "low",
-    monthlyRevenue: m([480, 510, 470, 530, 560, 600, 590, 640, 610, 660, 700, 690]).map(v => v * 1000),
+    monthlyRevenue: m([480, 510, 470, 530, 560, 600, 590, 640, 610, 660, 700, 630]).map(v => v * 1000),
     financing: {
       amount: 2_200_000,
       monthlyShareRate: 0.045,
@@ -271,7 +271,14 @@ const merchantSeeds: MerchantSeed[] = [
 
 // 依最近一個月相對上個月的營收增減幅度，動態判斷黃燈／紅燈，呼應企劃書
 // 「紅燈：營收陡降預警」「黃燈：發票開立偏離」等以量化閾值觸發警示的精神
-// （此處簡化為月增減幅，示範用途）。
+// （此處簡化為月增減幅，示範用途——文件原本的黃燈/紅燈是 POS／發票／電支
+// 三方資料互相勾稽出的落差，investor-portal 沒有那三份原始資料可比對，只能
+// 用營收月增減幅當代理指標）。
+//
+// 門檻刻意設得比正常月波動高：一般店家每個月本來就會有個位數百分比的自然
+// 起伏，如果隨便跌一點就跳警示，等於把正常雜訊當成異常，會讓警示失去意義。
+// 跌幅 >=8% 才算黃燈、>=15% 才算紅燈，確保警示真的對應「這個月有點不對勁」
+// 而不是「這個月比上個月少賣了幾杯咖啡」。
 function computeAlertLevel(monthlyRevenue: number[]): AlertLevel {
   if (monthlyRevenue.length < 2) return "ok";
   const last = monthlyRevenue[monthlyRevenue.length - 1];
@@ -279,7 +286,7 @@ function computeAlertLevel(monthlyRevenue: number[]): AlertLevel {
   if (prev <= 0) return "ok";
   const dropPct = (prev - last) / prev;
   if (dropPct >= 0.15) return "red";
-  if (dropPct > 0) return "yellow";
+  if (dropPct >= 0.08) return "yellow";
   return "ok";
 }
 
