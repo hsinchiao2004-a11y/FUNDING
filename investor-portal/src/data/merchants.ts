@@ -1,5 +1,10 @@
 export type RiskTier = "low" | "medium" | "elevated";
 
+// 對應企劃書「五、資料驗證機制」的黃燈／紅燈異常警示（三方資料勾稽結果）。
+// ok：資料勾稽正常；yellow：發票開立偏離或通訊異常中斷；red：金流結構劇變
+// 或營收陡降，次級市場轉讓功能依規則鎖定。
+export type AlertLevel = "ok" | "yellow" | "red";
+
 export interface Merchant {
   id: string;
   name: string;
@@ -9,6 +14,7 @@ export interface Merchant {
   storefronts: number;
   rrs: number; // Revenue Reliability Score, 0-100
   riskTier: RiskTier;
+  alertLevel: AlertLevel;
   monthlyRevenue: number[]; // last 12 months, TWD
   financing: {
     amount: number; // 融資金額
@@ -42,6 +48,7 @@ export const merchants: Merchant[] = [
     storefronts: 1,
     rrs: 82,
     riskTier: "low",
+    alertLevel: "ok",
     monthlyRevenue: m([620, 640, 700, 690, 710, 760, 820, 790, 860, 900, 940, 980]).map(v => v * 1000),
     financing: {
       amount: 3_000_000,
@@ -79,6 +86,7 @@ export const merchants: Merchant[] = [
     storefronts: 2,
     rrs: 76,
     riskTier: "low",
+    alertLevel: "ok",
     monthlyRevenue: m([480, 510, 470, 530, 560, 600, 590, 640, 610, 660, 700, 690]).map(v => v * 1000),
     financing: {
       amount: 2_200_000,
@@ -115,6 +123,7 @@ export const merchants: Merchant[] = [
     storefronts: 1,
     rrs: 88,
     riskTier: "low",
+    alertLevel: "ok",
     monthlyRevenue: m([850, 870, 900, 860, 880, 910, 950, 920, 960, 1000, 1020, 1050]).map(v => v * 1000),
     financing: {
       amount: 3_600_000,
@@ -151,6 +160,7 @@ export const merchants: Merchant[] = [
     storefronts: 1,
     rrs: 68,
     riskTier: "medium",
+    alertLevel: "yellow",
     monthlyRevenue: m([310, 330, 300, 340, 360, 350, 380, 400, 370, 410, 430, 420]).map(v => v * 1000),
     financing: {
       amount: 1_500_000,
@@ -187,6 +197,7 @@ export const merchants: Merchant[] = [
     storefronts: 1,
     rrs: 71,
     riskTier: "medium",
+    alertLevel: "ok",
     monthlyRevenue: m([260, 280, 300, 330, 350, 370, 400, 430, 410, 450, 470, 500]).map(v => v * 1000),
     financing: {
       amount: 1_800_000,
@@ -223,6 +234,7 @@ export const merchants: Merchant[] = [
     storefronts: 1,
     rrs: 79,
     riskTier: "low",
+    alertLevel: "ok",
     monthlyRevenue: m([390, 400, 420, 410, 440, 460, 470, 490, 480, 510, 530, 520]).map(v => v * 1000),
     financing: {
       amount: 2_000_000,

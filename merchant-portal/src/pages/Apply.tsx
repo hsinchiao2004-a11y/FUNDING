@@ -17,6 +17,7 @@ import {
   Gift,
   CurrencyBtc,
   Vault,
+  ChartLineUp,
 } from "@phosphor-icons/react";
 import { useApplications, type CollateralType } from "../lib/ApplicationContext";
 import {
@@ -29,7 +30,7 @@ import {
   type CreditAssessment,
 } from "../lib/underwriting";
 import { Button } from "../components/Button";
-import { formatTWD, clamp } from "../lib/format";
+import { formatTWD, formatPct, clamp } from "../lib/format";
 
 interface AllocationItem {
   id: number;
@@ -82,10 +83,14 @@ export function Apply() {
   const taxIdValid = isValidTaxId(profile.taxId);
   const bankAccountsValid =
     profile.bankAccounts.length > 0 && profile.bankAccounts.every((a) => a.trim() !== "");
+  const revenueDataValid =
+    profile.avgMonthlyRevenue !== null && profile.avgMonthlyRevenue > 0 &&
+    profile.maxMonthlyRevenue !== null && profile.minMonthlyRevenue !== null &&
+    profile.maxMonthlyRevenue >= profile.minMonthlyRevenue;
   const canProceedToResult =
     companyNameValid && taxIdValid && profile.incomeTaxDocsUploaded && profile.businessTaxDocsUploaded &&
     bankAccountsValid &&
-    profile.bankStatementUploaded && profile.creditScore !== null;
+    profile.bankStatementUploaded && profile.creditScore !== null && revenueDataValid;
 
   const updateBankAccount = (index: number, value: string) => {
     setProfile((p) => ({
@@ -200,7 +205,7 @@ export function Apply() {
       <div className="mx-auto max-w-2xl px-6 py-12">
         <h1 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">申請融資</h1>
         <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-secondary">
-          第一步：核實商家資料，平台將依此判斷有／無擔保核貸額度、每月額度與最低還款條件。
+          第一步：核實商家資料，AI 徵信 Agent 將依過去 24 個月營運數據計算核貸額度、每月最低攤還金額與還款條件。
         </p>
 
         <div className="mt-6 flex items-center gap-2 text-xs font-medium text-ink-muted">
@@ -362,6 +367,69 @@ export function Apply() {
             )}
           </div>
 
+          <div className="flex flex-col gap-2 border-t border-hairline pt-5">
+            <span className="flex items-center gap-1.5 text-sm font-medium text-ink">
+              <ChartLineUp size={16} className="text-ink-muted" /> 過去 24 個月營運數據
+            </span>
+            <p className="text-xs text-ink-muted">
+              AI 徵信 Agent 依此計算核貸額度：核貸額度 = min(過去 24 個月平均月營收 × 融資營收倍數, 300 萬)，
+              最高／最低單月營收則用來評估營收穩定度。
+            </p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-ink-secondary">平均月營收</label>
+                <div className="flex items-center gap-1.5 rounded-xl border border-hairline bg-plane px-3 py-2">
+                  <span className="text-sm text-ink-muted">NT$</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={10_000}
+                    value={profile.avgMonthlyRevenue ?? ""}
+                    onChange={(e) =>
+                      setProfile((p) => ({ ...p, avgMonthlyRevenue: e.target.value === "" ? null : Number(e.target.value) }))
+                    }
+                    placeholder="例如：800000"
+                    className="tabular w-full bg-transparent font-mono text-sm text-ink outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-ink-secondary">單月最高營收</label>
+                <div className="flex items-center gap-1.5 rounded-xl border border-hairline bg-plane px-3 py-2">
+                  <span className="text-sm text-ink-muted">NT$</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={10_000}
+                    value={profile.maxMonthlyRevenue ?? ""}
+                    onChange={(e) =>
+                      setProfile((p) => ({ ...p, maxMonthlyRevenue: e.target.value === "" ? null : Number(e.target.value) }))
+                    }
+                    placeholder="例如：1100000"
+                    className="tabular w-full bg-transparent font-mono text-sm text-ink outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-ink-secondary">單月最低營收</label>
+                <div className="flex items-center gap-1.5 rounded-xl border border-hairline bg-plane px-3 py-2">
+                  <span className="text-sm text-ink-muted">NT$</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={10_000}
+                    value={profile.minMonthlyRevenue ?? ""}
+                    onChange={(e) =>
+                      setProfile((p) => ({ ...p, minMonthlyRevenue: e.target.value === "" ? null : Number(e.target.value) }))
+                    }
+                    placeholder="例如：600000"
+                    className="tabular w-full bg-transparent font-mono text-sm text-ink outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           <label className="flex items-start gap-2.5 rounded-xl border border-hairline bg-plane px-3 py-2.5">
             <input
               type="checkbox"
@@ -370,7 +438,7 @@ export function Apply() {
               className="mt-0.5 accent-accent-600"
             />
             <span className="text-sm text-ink-secondary">
-              提供 POS 交易數據（選填）——有助於提高核准額度、降低最低還款比例
+              提供 POS 交易數據（選填）——連接後 AI 可更精確評估營收穩定度，有助於提高融資營收倍數
             </span>
           </label>
 
@@ -429,38 +497,45 @@ export function Apply() {
         <div className="mt-6 rounded-2xl border border-hairline bg-surface p-6">
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center rounded-full bg-accent-50 px-3 py-1 text-sm font-medium text-accent-700">
-              {assessment.securedType}核貸
+              AI 徵信 Agent 初審通過
             </span>
             <span className="text-sm text-ink-muted">
               信用評分 {assessment.score}（{assessment.tier}）
             </span>
           </div>
 
+          <div className="mt-6">
+            <p className="text-xs text-ink-muted">核貸額度 L = min(R̄24 × M_AI, 300萬)</p>
+            <p className="tabular font-mono text-3xl font-medium text-ink">{formatTWD(assessment.loanAmount)}</p>
+            <p className="mt-1 text-xs text-ink-muted">
+              R̄24（平均月營收）{formatTWD(assessment.avgMonthlyRevenue)} × M_AI（融資營收倍數）{assessment.mai.toFixed(2)}x
+            </p>
+          </div>
+
           <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3">
             <div>
-              <p className="text-xs text-ink-muted">建議額度區間</p>
-              <p className="tabular font-mono text-lg font-medium text-ink">
-                {formatTWD(assessment.suggestedRange[0])} – {formatTWD(assessment.suggestedRange[1])}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-ink-muted">每月額度上限</p>
+              <p className="text-xs text-ink-muted">每月最低攤還金額</p>
               <p className="tabular font-mono text-lg font-medium text-ink">{formatTWD(assessment.monthlyQuota)}</p>
             </div>
             <div>
-              <p className="text-xs text-ink-muted">最低月還款比例</p>
-              <p className="tabular font-mono text-lg font-medium text-ink">{assessment.minRepayPct}%</p>
+              <p className="text-xs text-ink-muted">銀行最低年利率</p>
+              <p className="tabular font-mono text-lg font-medium text-ink">{formatPct(assessment.bankAnnualRate * 100)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-ink-muted">還款期限上限</p>
+              <p className="tabular font-mono text-lg font-medium text-ink">{assessment.termMonths} 個月</p>
             </div>
           </div>
 
-          {!profile.posConnected && (
-            <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-hairline bg-plane p-3.5">
-              <Info size={16} weight="duotone" className="mt-0.5 shrink-0 text-accent-600" />
-              <p className="text-xs leading-relaxed text-ink-muted">
-                提供 POS 交易數據可再提高額度、並降低最低還款比例 0.5 個百分點。
-              </p>
-            </div>
-          )}
+          <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-hairline bg-plane p-3.5">
+            <Info size={16} weight="duotone" className="mt-0.5 shrink-0 text-accent-600" />
+            <p className="text-xs leading-relaxed text-ink-muted">
+              {profile.posConnected
+                ? "已提供 POS 交易數據，AI 已將融資營收倍數提高至可評估上限。"
+                : "提供 POS 交易數據可讓 AI 更精確評估營收穩定度，進一步提高融資營收倍數。"}
+              以上為 Agent 初審結果，僅供申請流程前段參考；最終核貸額度、分潤比例與還款期限，須經合作銀行依抵押品與財務狀況終審核定。
+            </p>
+          </div>
         </div>
 
         <Button className="mt-6 w-full" size="lg" onClick={goToTerms}>

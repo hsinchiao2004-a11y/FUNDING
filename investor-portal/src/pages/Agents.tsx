@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import clsx from "clsx";
 import {
   Robot,
   MagnifyingGlass,
@@ -13,6 +14,9 @@ import {
   Pulse,
   Coins,
   CalendarCheck,
+  WarningCircle,
+  ShareNetwork,
+  Check,
 } from "@phosphor-icons/react";
 import { usePortfolio } from "../lib/PortfolioContext";
 import { useNotifications } from "../lib/NotificationContext";
@@ -61,15 +65,15 @@ const scenario = [
   },
   {
     time: "第 4 個月",
-    title: "營收波動，投資分身 Agent 主動介入",
-    actor: "投資分身 Agent",
+    title: "營收波動，風險監測管理 Agent 主動介入",
+    actor: "風險監測管理 Agent",
     icon: Pulse,
     body: "花見咖啡因店休整修，當月營收較預期下滑。Agent 偵測到異常後，主動通知 Lisa「本期分潤已同步下修，建議先觀察一季、暫不加碼」，同時標記商家端需補充說明——不需要 Lisa 自己盯營收數字。",
   },
   {
     time: "第 4 個月",
-    title: "消費循環 Agent 主動觸發回訪",
-    actor: "消費循環 Agent → Lisa",
+    title: "投資人變消費者 Agent 主動觸發回訪",
+    actor: "投資人變消費者 Agent → Lisa",
     icon: Megaphone,
     body: "Agent 同時偵測到 Lisa 已 45 天沒有到店消費，主動發送「投資人專屬 9 折」到店優惠通知。Lisa 到店消費、順便看看自己投資的店——投資關係變成實際消費，而不是等她自己想起來。",
   },
@@ -118,6 +122,18 @@ export function Agents() {
 
   const loopExample = notifications[0];
   const loopMerchant = loopExample ? getMerchant(loopExample.merchantId) : undefined;
+
+  const [referralCopied, setReferralCopied] = useState(false);
+  const shareWithFriends = async (merchantName: string) => {
+    const text = `我投資了「${merchantName}」，身為投資人享有專屬到店優惠，一起來看看這家店吧！`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setReferralCopied(true);
+      window.setTimeout(() => setReferralCopied(false), 2000);
+    } catch {
+      // 示範用途：剪貼簿權限被拒時不中斷畫面，僅不顯示「已複製」提示。
+    }
+  };
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-12">
@@ -185,16 +201,17 @@ export function Agents() {
         </div>
       </section>
 
-      {/* 2. 投資分身 Agent —— 次要：持續動態管理，而非一次性評分 */}
+      {/* 2. 風險監測管理 Agent（投資分身）—— 次要：持續動態管理，而非一次性評分 */}
       <section className="mt-10">
         <div className="flex items-center gap-2">
           <MagnifyingGlass size={18} weight="duotone" className="text-accent-600" />
-          <h2 className="text-lg font-medium text-ink">投資分身 Agent</h2>
+          <h2 className="text-lg font-medium text-ink">風險監測管理 Agent</h2>
+          <span className="text-xs text-ink-muted">（投資分身）</span>
         </div>
         <p className="mt-1 max-w-xl text-sm leading-relaxed text-ink-secondary">
           從一開始的商家推薦到之後的持續監控，都是同一個 Agent 在管理，而不是核准當下算一次
-          分數就結束——先透過風險、獲利、商家性質偏好調查幫你篩出第一批推薦商家，之後每天
-          都在替你的投資組合值班、主動給出建議。
+          分數就結束——先透過風險、獲利、商家性質偏好調查幫你篩出第一批推薦商家，之後全天候
+          替你的投資組合值班、主動給出建議，取代定期報表。
         </p>
 
         <Link
@@ -233,6 +250,19 @@ export function Agents() {
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-ink">{merchant.name}</p>
                     <RiskBadge tier={merchant.riskTier} />
+                    {merchant.alertLevel !== "ok" && (
+                      <span
+                        className={clsx(
+                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+                          merchant.alertLevel === "red"
+                            ? "bg-status-critical/10 text-status-critical"
+                            : "bg-status-warning/15 text-[#946200]",
+                        )}
+                      >
+                        <WarningCircle size={11} weight="bold" />
+                        {merchant.alertLevel === "red" ? "紅燈" : "黃燈"}
+                      </span>
+                    )}
                   </div>
                   <p className="mt-1 max-w-md text-sm text-ink-secondary">
                     {suggestionByTier[merchant.riskTier]}
@@ -252,47 +282,68 @@ export function Agents() {
             <p className="text-sm font-medium text-ink">分潤再投資提醒</p>
           </div>
           <p className="mt-1 text-sm leading-relaxed text-ink-secondary">
-            分潤預設每月撥付，但 Agent 會依營收表現主動判斷是否該提醒你滾入再投資——營收表現極
-            佳時建議加碼複利，波動加大時則建議先觀察、暫緩再投資，而不是等你自己想到才去操作。
+            Agent 整合每月分潤自動再投資功能，選擇「每月自動再投資」的持股無須手動操作；若商家
+            觸發黃燈／紅燈警示，Agent 會主動跳脫既有設定、暫停自動再投資，並提醒你重新評估——
+            而不是悶頭照舊設定執行到底。
           </p>
           <div className="mt-4 flex flex-col divide-y divide-hairline">
-            {monitoredMerchants.map((merchant) => (
-              <div key={merchant.id} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-50 text-accent-700">
-                    <Storefront size={14} weight="duotone" />
+            {monitoredMerchants.map((merchant) => {
+              const holding = holdings.find((h) => h.merchantId === merchant.id);
+              const isReinvestMode = holding?.payoutMode === "reinvest";
+              const isAlerted = merchant.alertLevel !== "ok";
+              return (
+                <div key={merchant.id} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-50 text-accent-700">
+                      <Storefront size={14} weight="duotone" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-ink">{merchant.name}</p>
+                      {isReinvestMode ? (
+                        isAlerted ? (
+                          <p className="mt-0.5 flex items-start gap-1 max-w-md text-xs text-status-critical">
+                            <WarningCircle size={13} weight="bold" className="mt-0.5 shrink-0" />
+                            觸發{merchant.alertLevel === "red" ? "紅燈" : "黃燈"}警示，Agent 已暫停自動再投資設定，
+                            建議重新評估是否調整再投資標的或比例。
+                          </p>
+                        ) : (
+                          <p className="mt-0.5 max-w-md text-xs text-ink-secondary">
+                            已設定每月自動再投資，Agent 於每期分潤入帳時直接複利滾入本金，無須手動操作。
+                          </p>
+                        )
+                      ) : (
+                        <p className="mt-0.5 max-w-md text-xs text-ink-secondary">
+                          {reinvestReminderByTier[merchant.riskTier]}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-ink">{merchant.name}</p>
-                    <p className="mt-0.5 max-w-md text-xs text-ink-secondary">
-                      {reinvestReminderByTier[merchant.riskTier]}
-                    </p>
-                  </div>
+                  {hasHoldings && holdingTotals.get(merchant.id) && (
+                    <Link
+                      to="/portfolio"
+                      className="shrink-0 whitespace-nowrap text-xs font-medium text-accent-700 hover:text-accent-800"
+                    >
+                      前往查看 →
+                    </Link>
+                  )}
                 </div>
-                {hasHoldings && holdingTotals.get(merchant.id) && (
-                  <Link
-                    to="/portfolio"
-                    className="shrink-0 whitespace-nowrap text-xs font-medium text-accent-700 hover:text-accent-800"
-                  >
-                    前往滾入再投資 →
-                  </Link>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* 3. 消費循環 Agent —— 最具差異化：投資人變消費者，主動觸發 */}
+      {/* 3. 投資人變消費者 Agent（消費循環）—— 最具差異化：主動觸發，不待通知 */}
       <section className="mt-10">
         <div className="flex items-center gap-2">
           <Megaphone size={18} weight="duotone" className="text-accent-600" />
-          <h2 className="text-lg font-medium text-ink">消費循環 Agent</h2>
+          <h2 className="text-lg font-medium text-ink">投資人變消費者 Agent</h2>
+          <span className="text-xs text-ink-muted">（消費循環）</span>
         </div>
         <p className="mt-1 max-w-xl text-sm leading-relaxed text-ink-secondary">
-          持續比對你投資商家的「營收變化」與你「最近一次到店消費」的時間，一旦偵測到營收波動、
-          或你已一段時間沒有到店，就主動生成個人化到店優惠並推播通知——把投資關係主動導回實際
-          消費，而不是被動期待「投資人變消費者」的循環自然發生。
+          持續監控你投資商家的營收訊號，一旦偵測到營收出現下滑，不待商家或投資人主動反應，
+          即自動觸發客製化優惠券推播——把「投資人擔心分潤變少」的被動焦慮，轉化為「投資人
+          主動幫商家拉抬營收」的具體行動。
         </p>
 
         {loopExample && loopMerchant && (
@@ -305,6 +356,14 @@ export function Agents() {
               <div>
                 <p className="text-sm font-medium text-ink">{loopMerchant.name}</p>
                 <p className="mt-1 text-sm leading-relaxed text-ink-secondary">{loopExample.message}</p>
+                <button
+                  type="button"
+                  onClick={() => shareWithFriends(loopMerchant.name)}
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-accent-700 hover:text-accent-800"
+                >
+                  {referralCopied ? <Check size={13} weight="bold" /> : <ShareNetwork size={13} weight="duotone" />}
+                  {referralCopied ? "已複製推薦文字" : "分享給朋友，推薦親友到店"}
+                </button>
               </div>
             </div>
           </div>

@@ -13,6 +13,7 @@ export interface Holding {
   investedAt: string; // ISO date
   accruedDividend: number; // 已入帳、尚未提領或折抵的分潤
   payoutMode: PayoutMode;
+  reinvestPausedByAgent: boolean; // 本期是否因商家觸發黃燈/紅燈，被風險監測管理 Agent 暫停自動再投資
 }
 
 export interface StoreCredit {
@@ -57,7 +58,12 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
       const parsed = JSON.parse(raw) as Array<Partial<Holding> & { merchantId: string; amount: number; investedAt: string }>;
-      return parsed.map((h) => ({ ...h, accruedDividend: h.accruedDividend ?? 0, payoutMode: h.payoutMode ?? "monthly" }));
+      return parsed.map((h) => ({
+        ...h,
+        accruedDividend: h.accruedDividend ?? 0,
+        payoutMode: h.payoutMode ?? "monthly",
+        reinvestPausedByAgent: h.reinvestPausedByAgent ?? false,
+      }));
     } catch {
       return [];
     }
@@ -123,7 +129,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     if (!merchants.some((m) => m.id === merchantId) || amount <= 0) return;
     setHoldings((prev) => [
       ...prev,
-      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: 0, payoutMode },
+      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: 0, payoutMode, reinvestPausedByAgent: false },
     ]);
   };
 
@@ -138,7 +144,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   const addHolding = (merchantId: string, amount: number) => {
     setHoldings((prev) => [
       ...prev,
-      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: 0, payoutMode: "monthly" },
+      { merchantId, amount, investedAt: new Date().toISOString(), accruedDividend: 0, payoutMode: "monthly", reinvestPausedByAgent: false },
     ]);
   };
 
@@ -195,8 +201,15 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     const next = holdings.map((h) => {
       const period = simulatePeriodDividend(h.amount);
       if (h.payoutMode === "reinvest") {
+        // 風險監測管理 Agent：商家觸發黃燈／紅燈時，主動跳脫既有的自動再投資
+        // 設定，暫停複利滾入、改為累積可處理分潤，並提醒投資人重新評估——
+        // 而不是悶頭照舊設定執行。
+        const alertLevel = getMerchant(h.merchantId)?.alertLevel ?? "ok";
+        if (alertLevel !== "ok") {
+          return { ...h, accruedDividend: h.accruedDividend + period, reinvestPausedByAgent: true };
+        }
         reinvestedThisCycle += period;
-        return { ...h, amount: h.amount + period };
+        return { ...h, amount: h.amount + period, reinvestPausedByAgent: false };
       }
       return { ...h, accruedDividend: h.accruedDividend + period };
     });

@@ -78,11 +78,6 @@ export const aiSuggestions = [
     body: "近 3 個月營收平均成長 6.4%，分潤回收速度較預期快，預估提前 2-3 個月完成回收。",
   },
   {
-    type: "info" as const,
-    title: "可申請追加額度",
-    body: "依目前 RRS 分數與營收規模，預估可再申請 NT$80–120 萬元用於第二間店拓展。",
-  },
-  {
     type: "warning" as const,
     title: "電子發票尚未連接",
     body: "連接電子發票資料可加快 AI 風險評估更新速度，並提高未來申請額度的核准效率。",

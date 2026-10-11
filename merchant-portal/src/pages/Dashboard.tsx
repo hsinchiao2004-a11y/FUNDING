@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { TrendUp, Lightbulb, Warning, ArrowRight } from "@phosphor-icons/react";
+import { TrendUp, Lightbulb, Warning, ArrowRight, Robot } from "@phosphor-icons/react";
 import {
   profile,
   rrs,
@@ -10,12 +10,13 @@ import {
   dataSources,
   aiSuggestions,
 } from "../data/account";
+import { inferRevenueVolatility, computeMai, computeLoanAmount } from "../lib/underwriting";
 import { RevenueChart } from "../components/RevenueChart";
 import { StatTile } from "../components/StatTile";
 import { ProgressBar } from "../components/ProgressBar";
 import { Pill } from "../components/Badge";
 import { PromoSuggestionCard } from "../components/PromoSuggestionCard";
-import { formatCompactTWD, formatPct } from "../lib/format";
+import { formatTWD, formatCompactTWD, formatPct } from "../lib/format";
 
 const suggestionIcon = { positive: TrendUp, info: Lightbulb, warning: Warning };
 const suggestionTone = { positive: "good", info: "info", warning: "warning" } as const;
@@ -24,6 +25,17 @@ const suggestionLabel = { positive: "正向訊號", info: "小提醒", warning: 
 export function Dashboard() {
   const connectedCount = dataSources.filter((d) => d.connected).length;
   const pctRepaid = (totalRepaid / cap) * 100;
+
+  // AI 徵信 Agent：持續徵信，取代一次性審查——隨每月新增之營運數據持續重新
+  // 校準核貸額度，商家申請追加額度時可立即依最新數據判斷，不需重新送件。
+  const posConnected = dataSources.find((d) => d.id === "pos")?.connected ?? false;
+  const avgRevenue = monthlyRevenue.reduce((sum, v) => sum + v, 0) / monthlyRevenue.length;
+  const maxRevenue = Math.max(...monthlyRevenue);
+  const minRevenue = Math.min(...monthlyRevenue);
+  const volatility = inferRevenueVolatility(avgRevenue, maxRevenue, minRevenue);
+  const mai = computeMai(volatility, posConnected);
+  const latestLoanAmount = computeLoanAmount(avgRevenue, mai);
+  const additionalAvailable = Math.max(0, latestLoanAmount - financing.amount);
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-12">
@@ -98,9 +110,23 @@ export function Dashboard() {
             to="/apply"
             className="rounded-2xl border border-accent-200 bg-accent-50 p-5 transition-colors hover:border-accent-300"
           >
-            <p className="font-medium text-accent-800">想申請新一輪融資？</p>
+            <div className="flex items-center gap-1.5">
+              <Robot size={15} weight="duotone" className="text-accent-700" />
+              <p className="font-medium text-accent-800">AI 徵信 Agent</p>
+            </div>
+            <p className="mt-1 text-xs text-accent-700/70">
+              持續徵信，隨每月最新營運數據重新校準，不需重新送件審查
+            </p>
+            <div className="mt-3 flex items-baseline justify-between">
+              <span className="text-xs text-accent-700/80">最新試算核貸額度</span>
+              <span className="tabular font-mono text-lg font-medium text-accent-900">
+                {formatTWD(latestLoanAmount)}
+              </span>
+            </div>
             <p className="mt-1 text-sm text-accent-700/80">
-              依目前 RRS 分數，預估可申請 NT$80–120 萬元
+              {additionalAvailable > 0
+                ? `較目前融資金額高 ${formatTWD(additionalAvailable)}，可立即申請追加額度`
+                : "已達目前融資上限，維持現有額度"}
             </p>
           </Link>
         </section>

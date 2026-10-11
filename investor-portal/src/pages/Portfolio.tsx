@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Wallet, Storefront, TrendUp, Compass, Coins, Ticket, ArrowsLeftRight, Robot, ArrowsClockwise, FastForward } from "@phosphor-icons/react";
+import { Wallet, Storefront, TrendUp, Compass, Coins, Ticket, ArrowsLeftRight, Robot, ArrowsClockwise, FastForward, WarningCircle } from "@phosphor-icons/react";
 import { usePortfolio, type PayoutMode } from "../lib/PortfolioContext";
 import { getMerchant } from "../data/merchants";
 import { StatTile } from "../components/StatTile";
@@ -182,32 +182,40 @@ export function Portfolio() {
                   </div>
 
                   {holding.accruedDividend > 0 ? (
-                    <div className="flex flex-col gap-2.5 rounded-xl border border-hairline bg-plane p-3.5 sm:flex-row sm:items-center sm:justify-between">
-                      <span className="inline-flex items-center gap-1.5 text-sm text-ink-secondary">
-                        <Coins size={15} weight="duotone" className="text-accent-600" />
-                        本筆已入帳分潤 <span className="tabular font-mono text-ink">{formatTWD(holding.accruedDividend)}</span>
-                      </span>
-                      {holding.payoutMode === "maturity" ? (
-                        <span className="text-xs text-ink-muted">已鎖定至合約到期，屆時一次撥付現金</span>
-                      ) : holding.payoutMode === "reinvest" ? (
-                        <Button size="md" onClick={() => reinvest(i)}>
-                          <ArrowsClockwise size={14} />
-                          滾入再投資
-                        </Button>
-                      ) : (
-                        <div className="flex flex-wrap gap-2">
-                          <Button variant="ghost" size="md" onClick={() => redeemCash(i)}>
-                            提領現金
-                          </Button>
-                          <Button variant="ghost" size="md" onClick={() => reinvest(i)}>
+                    <div className="flex flex-col gap-2.5 rounded-xl border border-hairline bg-plane p-3.5">
+                      {holding.payoutMode === "reinvest" && holding.reinvestPausedByAgent && (
+                        <p className="flex items-start gap-1.5 text-xs text-status-warning">
+                          <WarningCircle size={13} weight="bold" className="mt-0.5 shrink-0" />
+                          商家觸發黃燈／紅燈警示，風險監測管理 Agent 已暫停本筆自動再投資，分潤改為累積，請重新評估。
+                        </p>
+                      )}
+                      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+                        <span className="inline-flex items-center gap-1.5 text-sm text-ink-secondary">
+                          <Coins size={15} weight="duotone" className="text-accent-600" />
+                          本筆已入帳分潤 <span className="tabular font-mono text-ink">{formatTWD(holding.accruedDividend)}</span>
+                        </span>
+                        {holding.payoutMode === "maturity" ? (
+                          <span className="text-xs text-ink-muted">已鎖定至合約到期，屆時一次撥付現金</span>
+                        ) : holding.payoutMode === "reinvest" && !holding.reinvestPausedByAgent ? (
+                          <Button size="md" onClick={() => reinvest(i)}>
                             <ArrowsClockwise size={14} />
                             滾入再投資
                           </Button>
-                          <Button size="md" onClick={() => redeemAsCredit(i)}>
-                            折抵消費金 (+{Math.round((merchant.financing.creditBoostRate - 1) * 100)}%)
-                          </Button>
-                        </div>
-                      )}
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            <Button variant="ghost" size="md" onClick={() => redeemCash(i)}>
+                              提領現金
+                            </Button>
+                            <Button variant="ghost" size="md" onClick={() => reinvest(i)}>
+                              <ArrowsClockwise size={14} />
+                              滾入再投資
+                            </Button>
+                            <Button size="md" onClick={() => redeemAsCredit(i)}>
+                              折抵消費金 (+{Math.round((merchant.financing.creditBoostRate - 1) * 100)}%)
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ) : holding.payoutMode === "reinvest" ? (
                     <p className="text-xs text-ink-muted">
