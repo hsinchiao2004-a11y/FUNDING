@@ -13,15 +13,55 @@ import {
   CalendarCheck,
   WarningCircle,
   ShareNetwork,
-  Check,
+  X,
 } from "@phosphor-icons/react";
 import { usePortfolio } from "../lib/PortfolioContext";
 import { useNotifications } from "../lib/NotificationContext";
-import { getMerchant, merchants, type RiskTier } from "../data/merchants";
+import { getMerchant, merchants, type RiskTier, type Merchant } from "../data/merchants";
 import { getExitMatchSuggestion, suggestedExitPrice } from "../lib/agentMatch";
 import { RiskBadge } from "../components/Badge";
 import { PortfolioPieChart, type PieSlice } from "../components/PortfolioPieChart";
 import { formatTWD } from "../lib/format";
+
+// 分享給朋友：產生一組朋友可在店裡出示兌換的 QR Code，而不是單純複製一段
+// 文字——文字訊息看不出能不能真的拿去消費，QR Code 才讓對方知道這是一張
+// 可以直接使用的優惠券。
+function ReferralShareModal({
+  merchant,
+  offer,
+  onClose,
+}: {
+  merchant: Merchant;
+  offer: string;
+  onClose: () => void;
+}) {
+  const qrData = encodeURIComponent(`WANGPU-REFERRAL:${merchant.id}:${Date.now()}`);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${qrData}`;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-6" onClick={onClose}>
+      <div
+        className="w-full max-w-sm rounded-2xl border border-hairline bg-surface p-6 text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-end">
+          <button onClick={onClose} aria-label="關閉" className="text-ink-muted hover:text-ink">
+            <X size={18} />
+          </button>
+        </div>
+        <p className="text-sm text-ink-muted">投資人推薦優惠．{merchant.name}</p>
+        <p className="mt-1 font-medium text-ink">{offer}</p>
+        <div className="mx-auto mt-5 flex h-[220px] w-[220px] items-center justify-center overflow-hidden rounded-xl border border-hairline bg-plane">
+          <img src={qrUrl} alt="推薦優惠兌換 QR Code" width={220} height={220} />
+        </div>
+        <p className="mt-3 text-xs leading-relaxed text-ink-muted">
+          請朋友出示此 QR Code 給店家掃描，即可直接到店兌換這筆推薦優惠——截圖傳給朋友，
+          或當面給對方掃描皆可。
+        </p>
+      </div>
+    </div>
+  );
+}
 
 const suggestionByTier: Record<RiskTier, string> = {
   low: "營收穩定、風險偏低，AI 建議：維持現有部位，持續累積分潤。",
@@ -75,17 +115,7 @@ export function Agents() {
   const loopExample = notifications[0];
   const loopMerchant = loopExample ? getMerchant(loopExample.merchantId) : undefined;
 
-  const [referralCopied, setReferralCopied] = useState(false);
-  const shareWithFriends = async (merchantName: string, offer: string) => {
-    const text = `我投資了「${merchantName}」，這週到店消費享有我的投資人專屬優惠「${offer}」，一起來看看這家店、順便享優惠吧！`;
-    try {
-      await navigator.clipboard.writeText(text);
-      setReferralCopied(true);
-      window.setTimeout(() => setReferralCopied(false), 2000);
-    } catch {
-      // 示範用途：剪貼簿權限被拒時不中斷畫面，僅不顯示「已複製」提示。
-    }
-  };
+  const [referralModalOpen, setReferralModalOpen] = useState(false);
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-12">
@@ -310,17 +340,25 @@ export function Agents() {
                 <p className="mt-1 text-sm leading-relaxed text-ink-secondary">{loopExample.message}</p>
                 <button
                   type="button"
-                  onClick={() => shareWithFriends(loopMerchant.name, loopExample.offer)}
+                  onClick={() => setReferralModalOpen(true)}
                   className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-accent-700 hover:text-accent-800"
                 >
-                  {referralCopied ? <Check size={13} weight="bold" /> : <ShareNetwork size={13} weight="duotone" />}
-                  {referralCopied ? "已複製推薦文字" : "分享給朋友，推薦親友到店"}
+                  <ShareNetwork size={13} weight="duotone" />
+                  分享給朋友，推薦親友到店
                 </button>
               </div>
             </div>
           </div>
         )}
       </section>
+
+      {referralModalOpen && loopMerchant && loopExample && (
+        <ReferralShareModal
+          merchant={loopMerchant}
+          offer={loopExample.offer}
+          onClose={() => setReferralModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
