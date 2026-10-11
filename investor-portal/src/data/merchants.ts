@@ -44,7 +44,12 @@ export interface Merchant {
 
 const m = (n: number[]) => n;
 
-export const merchants: Merchant[] = [
+// alertLevel 由 monthlyRevenue 動態算出（見檔案末尾），而非逐家寫死——這樣
+// 不管投資人實際持有哪幾家商家，只要那家店近期營收下滑，警示就會如實反映，
+// 不會因為剛好沒投到「唯一一家被標記的商家」而永遠看不到這個功能。
+type MerchantSeed = Omit<Merchant, "alertLevel">;
+
+const merchantSeeds: MerchantSeed[] = [
   {
     id: "brew-and-bloom",
     name: "花見咖啡 Brew & Bloom",
@@ -54,7 +59,6 @@ export const merchants: Merchant[] = [
     storefronts: 1,
     rrs: 82,
     riskTier: "low",
-    alertLevel: "ok",
     monthlyRevenue: m([620, 640, 700, 690, 710, 760, 820, 790, 860, 900, 940, 980]).map(v => v * 1000),
     financing: {
       amount: 3_000_000,
@@ -92,7 +96,6 @@ export const merchants: Merchant[] = [
     storefronts: 2,
     rrs: 76,
     riskTier: "low",
-    alertLevel: "ok",
     monthlyRevenue: m([480, 510, 470, 530, 560, 600, 590, 640, 610, 660, 700, 690]).map(v => v * 1000),
     financing: {
       amount: 2_200_000,
@@ -129,7 +132,6 @@ export const merchants: Merchant[] = [
     storefronts: 1,
     rrs: 88,
     riskTier: "low",
-    alertLevel: "ok",
     monthlyRevenue: m([850, 870, 900, 860, 880, 910, 950, 920, 960, 1000, 1020, 1050]).map(v => v * 1000),
     financing: {
       amount: 3_600_000,
@@ -166,7 +168,6 @@ export const merchants: Merchant[] = [
     storefronts: 1,
     rrs: 68,
     riskTier: "medium",
-    alertLevel: "yellow",
     monthlyRevenue: m([310, 330, 300, 340, 360, 350, 380, 400, 370, 410, 430, 420]).map(v => v * 1000),
     financing: {
       amount: 1_500_000,
@@ -203,7 +204,6 @@ export const merchants: Merchant[] = [
     storefronts: 1,
     rrs: 71,
     riskTier: "medium",
-    alertLevel: "ok",
     monthlyRevenue: m([260, 280, 300, 330, 350, 370, 400, 430, 410, 450, 470, 500]).map(v => v * 1000),
     financing: {
       amount: 1_800_000,
@@ -240,7 +240,6 @@ export const merchants: Merchant[] = [
     storefronts: 1,
     rrs: 79,
     riskTier: "low",
-    alertLevel: "ok",
     monthlyRevenue: m([390, 400, 420, 410, 440, 460, 470, 490, 480, 510, 530, 520]).map(v => v * 1000),
     financing: {
       amount: 2_000_000,
@@ -269,5 +268,24 @@ export const merchants: Merchant[] = [
     story: "獨立書店與選物複合空間，社群黏著度高，準備在中山商圈開設第二據點。",
   },
 ];
+
+// 依最近一個月相對上個月的營收增減幅度，動態判斷黃燈／紅燈，呼應企劃書
+// 「紅燈：營收陡降預警」「黃燈：發票開立偏離」等以量化閾值觸發警示的精神
+// （此處簡化為月增減幅，示範用途）。
+function computeAlertLevel(monthlyRevenue: number[]): AlertLevel {
+  if (monthlyRevenue.length < 2) return "ok";
+  const last = monthlyRevenue[monthlyRevenue.length - 1];
+  const prev = monthlyRevenue[monthlyRevenue.length - 2];
+  if (prev <= 0) return "ok";
+  const dropPct = (prev - last) / prev;
+  if (dropPct >= 0.15) return "red";
+  if (dropPct > 0) return "yellow";
+  return "ok";
+}
+
+export const merchants: Merchant[] = merchantSeeds.map((seed) => ({
+  ...seed,
+  alertLevel: computeAlertLevel(seed.monthlyRevenue),
+}));
 
 export const getMerchant = (id: string) => merchants.find((m) => m.id === id);
