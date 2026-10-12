@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
+import { ScrollToTop } from "./components/ScrollToTop";
 import { Gate } from "./pages/Gate";
 import { Landing } from "./pages/Landing";
 import { Marketplace } from "./pages/Marketplace";
@@ -24,6 +25,7 @@ export default function App() {
           <CouponProvider>
             <NotificationProvider>
               <BrowserRouter>
+                <ScrollToTop />
                 <Routes>
                   <Route path="/" element={<Gate />} />
                   <Route element={<Layout />}>
